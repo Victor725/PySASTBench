@@ -1,5 +1,5 @@
-# 《Empirical Evaluation of Python SAST Tools: Effectiveness, Efficiency, and Improvement Directions》
-In this paper, we present a dataset designed for evaluating Python SAST Tools. 
+# PySASTBench
+In 《Empirical Evaluation of Python SAST Tools: Effectiveness, Efficiency, and Improvement Directions》, we present a dataset designed for evaluating Python SAST Tools. 
 
 This dataset consists of 71 unique Common Vulnerabilities and Exposures (CVEs), providing a valuable resource for benchmarking. 
 
