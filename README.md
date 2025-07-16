@@ -9,11 +9,11 @@ Using this dataset, we conducted a large scale empirical evaluation of eight sta
 
 See  “RealworldDataset.csv” and "SyntheticDataset.csv" in this repository.
 
-Programs in the datasets will also be available upon publication.
+Programs in the datasets will be available upon publication.
 
 # Source code
 
-All source code will be released
+All source code will be released.
 
 # Tool List
 
