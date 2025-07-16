@@ -1,5 +1,5 @@
 # PySASTBench
-In 《Empirical Evaluation of Python SAST Tools: Effectiveness, Efficiency, and Improvement Directions》, we present a dataset designed for evaluating Python SAST Tools. 
+In 《An Empirical Study on Static Application Security Testing (SAST) Tools for Python》, we present a dataset designed for evaluating Python SAST Tools. 
 
 This dataset consists of 108 unique Common Vulnerabilities and Exposures (CVEs), providing a valuable resource for benchmarking. 
 
@@ -8,6 +8,12 @@ Using this dataset, we conducted a large scale empirical evaluation of eight sta
 # Dataset
 
 See  “RealworldDataset.csv” and "SyntheticDataset.csv" in this repository.
+
+Programs in the datasets will also be available upon publication.
+
+# Source code
+
+All source code will be released
 
 # Tool List
 
