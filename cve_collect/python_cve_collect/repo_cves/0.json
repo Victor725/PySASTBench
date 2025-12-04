@@ -1,0 +1,24 @@
+{
+    "openai/universe": [],
+    "meta-llama/llama-stack": [],
+    "bentoml/BentoML": [],
+    "LibraHp/GetQzonehistory": [],
+    "librosa/librosa": [],
+    "zilliztech/GPTCache": [],
+    "google/latexify_py": [],
+    "bridgecrewio/checkov": [],
+    "krishnaik06/The-Grand-Complete-Data-Science-Materials": [],
+    "jsvine/pdfplumber": [],
+    "ermaozi/get_subscribe": [],
+    "matplotlib/cheatsheets": [],
+    "LmeSzinc/AzurLaneAutoScript": [],
+    "PantsuDango/Dango-Translator": [
+        "CVE-2023-38942"
+    ],
+    "Tencent/Hunyuan3D-2": [],
+    "ahujasid/blender-mcp": [],
+    "stanfordnlp/stanza": [],
+    "LiheYoung/Depth-Anything": [],
+    "bigcode-project/starcoder": [],
+    "wiseodd/generative-models": []
+}
