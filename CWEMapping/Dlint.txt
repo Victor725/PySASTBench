@@ -1,0 +1,26 @@
+DUO120 avoid "marshal" module use;502
+DUO109 insecure use of "yaml" parsing function, prefer "safe_*" equivalent;502
+DUO130 insecure use of "hashlib" module
+DUO110 use of "compile" is insecure
+DUO105 use of "exec" is insecure;94
+DUO104 use of "eval" is insecure;94
+DUO116 use of "shell=True" is insecure in "subprocess" module;77,78
+DUO103 insecure use of "pickle" or "cPickle";502
+DUO119 avoid "shelve" module use;502
+DUO102 insecure use of "random" module, prefer "random.SystemRandom"
+DUO123 use of "verify=False" is insecure in "requests" module
+DUO107 insecure use of XML modules, prefer "defusedxml"
+DUO134 insecure "cryptography" attribute use
+DUO138 catastrophic "re" usage - denial-of-service possible
+DUO122 insecure "ssl" module attribute use
+DUO106 insecure use of "os" module;77,78
+DUO111 insecure use of "sys" module;94
+DUO121 use of "tempfile.mktemp" allows for race conditions
+DUO125 avoid "commands" module use;77,78
+DUO133 use of "Crypto" module is insecure
+DUO112 use of "extract|extractall" is insecure;22
+DUO114 "returnValue" in function missing "inlineCallbacks" decorator
+DUO115 use of "extract|extractall" is insecure;22
+DUO131 "urllib3" warnings disabled, insecure connections possible
+DUO132 "urllib3" certificate verification disabled, insecure connections possible
+DUO117 avoid "dl" module use

@@ -1,0 +1,17 @@
+User Controlled file returned to user;22
+User data to XML Parser.
+Environment variable or import injection may result in RCE
+Exception message is returned to the user
+User-controlled data flows into filesystem API (other);22
+Open redirect
+Commandline arguments injection may result in RCE;77,78
+User data to filesystem operation (read/write);22
+Unsafe deserialization may result in RCE;502
+Possible shell injection via command line arguments;77,78
+External/Internet request response data controls file handle before content deserialization may result in RCE;502
+XSS;79
+Possible shell injection;77,78
+SQL injection.;89
+User controlled response headers
+Potential Server-side request forgery (SSRF)
+Unsafe UserControlled file handle before content deserialization may result in RCE;502

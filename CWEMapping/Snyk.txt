@@ -1,0 +1,67 @@
+Calling {0} to extract all files from a tar file without sanitization. This may result files outside destination directory to be overwritten, resulting in an arbitrary file write.;22
+{0} used in {1} is insecure. Consider changing it to a secure hashing algorithm.
+The cookie's Secure flag is set to {0}. Set it to true to protect the cookie from man-in-the-middle attacks.
+Do not hardcode passwords in code. Found {0} password used in a dictionary key.
+Do not hardcode credentials in code. Found {0} credential used in here.
+Unsanitized input from {0} {1} into {2}, where it is used as a path. This may result in a Path Traversal vulnerability and allow an attacker to write arbitrary files.;22
+Unsanitized input from an environment variable {0} into {1}, where it is used as a path. This may result in a Path Traversal vulnerability and allow an attacker to remove arbitrary files.;22
+The permission {0} is set on a file using {1}. Allowing files to be readable or writable by users other than the owner may allow sensitive information to be accessed leading to information exposure.
+Unsanitized input from an environment variable {0} into {1}, where it is used to extract files from a tar archive. This may result files outside destination directory to be overwritten, resulting in an arbitrary file write.;22
+Unsanitized input from {0} {1} into {2}, where it is used as a path. This may result in a Path Traversal vulnerability and allow an attacker to remove arbitrary files.;22
+Unsanitized input from {0} {1} into {2}, where it is used to construct a template that gets rendered. This may result in a Server-Side Template Injection vulnerability.;94
+A hardcoded {0} is used as a cipher key in {1}. Generate the value with a cryptographically strong random number generator instead.
+A password from {0} {1} into {2}, without first having django.contrib.auth.password_validation.validate_password called on it. This may allow passwords to be set that don't conform to the application's password policy.
+Unsanitized input from {0} {1} into {2}, where it is used as a path. This may result in a Path Traversal vulnerability and allow an attacker to manipulate arbitrary files.;22
+Consider using TLS instead of SSL ({0} used in {1}).
+Cookie's HttpOnly flag is set to False by default. Set it to true to protect the cookie from possible malicious code on client side.
+Do not hardcode credentials in code. Found {0} credential used in a condition.
+Django {0} function was found to be not enforcing object level permissions. Not validating object permisions using check_object_permissions could result in Access Control issues.
+The integrity check disable against the received token which might be tampered with.
+The stack trace from {0} {1} into {2} and is leaked to the user. This may disclose sensitive server information to the attackers.
+Unsanitized input from an environment variable {0} into {1}, where it is used as a path. This may result in a Path Traversal vulnerability and allow an attacker to write arbitrary files.;22
+Unsanitized input from {0} {1} into {2}, where it is used to deserialize an object. This may result in an Unsafe Deserialization vulnerability.;502
+Unsanitized input from {0} {1} into access of the globals() dictionary, where it is executed as Python code. This may result in a Code Injection vulnerability.;94
+Call to deprecated method {0} does not specify a protocol, which may result in an insecure default being used
+Unsanitized input from an environment variable {0} into {1}, where it is used to deserialize an object. This may result in an Unsafe Deserialization vulnerability.;502
+Unsanitized input from {0} {1} into {2}, where it is used to extract a file from a tar archive. This may result files outside destination directory to be overwritten, resulting in an arbitrary file write.;22
+Unsanitized input from {0} {1} into {2}, where it is used as an URL to perform a request. This may result in a Server Side Request Forgery vulnerability.
+{0} is called with autoescape set to False. This increases the risk of Cross-Site Scripting (XSS) attacks.;79
+Unsanitized input from an environment variable {0} into {1}, where it is used to render an HTML page returned to the user. This may result in a Cross-Site Scripting attack (XSS).;79
+Unsanitized input from {0} {1} into {2}, where it is used to build an XPath query. This may result in an XPath Injection vulnerability.
+CSRF protection is disabled by setting the value to {0}. This allows the attackers to execute requests on a user's behalf.
+Unsanitized input from an environment variable {0} into {1}, where it is used to construct a template that gets rendered. This may result in a Server-Side Template Injection vulnerability.;94
+The cookie's HttpOnly flag is set to {0}. Set it to true to protect the cookie from possible malicious code on client side.
+Unsanitized input from an environment variable {0} into {1}, where it is used as a path. This may result in a Path Traversal vulnerability and allow an attacker to read arbitrary files.;22
+{0} is considered insecure. Use an analog from the defusedxml package.
+Use of {0} is deprecated and poses a security risk
+Unsanitized input from {0} {1} into {2}, where it is used as a path. This may result in a Path Traversal vulnerability and allow an attacker to read arbitrary files.;22
+Certificate verification is disabled by setting {0} to {1} in {2}. This may lead to Man-in-the-middle attacks.
+Cookie's Secure flag is set to False by default. Set it to true to protect the cookie from man-in-the-middle attacks.
+Unsanitized user input from {0} {1} into {2}, where it is used to build a regular expression. This may result in a Regular expression Denial of Service attack (reDOS).
+Unsanitized input from {0} {1} into {2}, where it is executed as Python code. This may result in a Code Injection vulnerability.;94
+Using {0} in {1} makes it listen on all network interfaces, which may open the service to unintended traffic.
+Unsanitized input from an environment variable {0} into {1}, where it is used as a path. This may result in a Path Traversal vulnerability and allow an attacker to manipulate arbitrary files.;22
+Unsanitized input from {0} {1} into {2}, where it is used to render an HTML page returned to the user. This may result in a Cross-Site Scripting attack (XSS).;79
+CSRF protection is disabled by {0}. This allows the attackers to execute requests on a user's behalf.
+Unsanitized input from {0} {1} into {2}, where it is used in an SQL query. This may result in an SQL Injection vulnerability.;89
+Security checks on the substrings of an unparsed URL are often vulnerable to bypassing.
+Running the application in debug mode (debug flag is set to {0} in {1}) is a security risk if the application is accessible by untrusted parties.
+Do not use old versions of TLS ({0} used in {1}).
+Unsanitized input from an environment variable {0} into {1}, where it is used as a shell command. This may result in a Command Injection vulnerability.;77,78
+Avoid hardcoding values that are meant to be secret. Found {0} used in {1}.
+Unsanitized input from {0} {1} into {2}, where it is used to extract files from a tar archive. This may result files outside destination directory to be overwritten, resulting in an arbitrary file write.;22
+Key size of {0} bits used in {1} is considered insecure for RSA. Use a key with at least 2048 bits.
+Do not hardcode passwords in code. Found {0} password used in {1}.
+Unsanitized input from an environment variable {0} into an unquoted CSV-writer ({1}). Use quoting=csv.QUOTE_ALL when the input is flowing from an untrusted source.
+{0} is insecure. Consider changing it to a secure hashing algorithm.
+Unsanitized input from an environment variable {0} into {1}, where it is used to build an XPath query. This may result in an XPath Injection vulnerability.
+Do not hardcode credentials in code. Found {0} credential used in {1}.
+Unsanitized input from {0} {1} into {2}, where it is used as a shell command. This may result in a Command Injection vulnerability.;77,78
+Unsanitized input from an environment variable {0} into {1}, where it is executed as Python code. This may result in a Code Injection vulnerability.;94
+Unsanitized input from {0} {1} into {2}, where it is used as input for request redirection. This may result in an Open Redirect vulnerability.
+Unsanitized user input from an environment variable {0} into {1}, where it is used to build a regular expression. This may result in a Regular expression Denial of Service attack (reDOS).
+Unsanitized input from {0} {1} into an unquoted CSV-writer ({2}). Use quoting=csv.QUOTE_ALL when the input is flowing from an untrusted source.
+The {0} policy used in {1} will not reject unknown host keys. This may lead to Man-in-the-middle attacks.
+{0} {1} might be too permissive. This allows malicious code on other domains to communicate with the application, which is a security risk
+{0} is called with no autoescape argument (autoescaping is disabled by default). This increases the risk of Cross-Site Scripting (XSS) attacks.;79
+Using context that has been passed from {0} will result with no hostname verification.

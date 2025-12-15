@@ -1,0 +1,25 @@
+Do not leave debug code in production
+Do not take the hash of low-entropy content.
+Insecure URL
+Do not deserialize untrusted data.;502
+Suspicious comment
+Review eval for untrusted data;94
+Weak/Broken Hash Algorithm
+Do not use weak/non-cryptographic random number generators
+Do not store tokens or keys in source code.
+Generic: Hard-coded Elliptic Curve
+Generic: Hard-coded SSL/TLS Protocol
+Generic: Do not hardcode SSL/TLS versions within an application.
+An Outdated or Banned SSL/TLS Protocol is Used
+Do not use outdated SSL/TLS protocols
+Do not use the DES symmetric block cipher.
+OpenSSL: Do not hardcode SSL/TLS versions within an application.
+OpenSSL: Hard-coded SSL/TLS Protocol
+Disabled certificate validation
+A weak cipher mode of operation was used
+Python - Hard-coded SSL/TLS Protocol
+Python- Do not hardcode TLS protocol versions.
+MacOS - Hard-coded SSL/TLS Protocol
+Do not use broken/weak cryptographic hash algorithms
+BoringSSL: Hard-coded SSL/TLS Protocol
+Possible incorrect datetime format

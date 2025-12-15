@@ -1,0 +1,56 @@
+Failure to use secure cookies
+JWT missing secret or public key verification
+Use of a broken or weak cryptographic hashing algorithm on sensitive data
+SQL query built from user-controlled sources;89
+Jinja2 templating with autoescape=False;94
+Denial of Service using Unicode Characters
+Overly permissive regular expression range
+Insecure temporary file
+Improper LDAP Authentication
+Incomplete URL substring sanitization
+XML internal entity expansion
+Log Injection
+Bypass Logical Validation Using Unicode Characters
+Incomplete regular expression for hostnames
+Decompression Bomb
+Request without certificate validation
+Initializing SECRET_KEY of Flask application with Constant value
+Full server-side request forgery
+Use of weak cryptographic key
+Partial server-side request forgery
+URL redirection from remote source
+Timing attack against secret
+Default version of SSL/TLS may be insecure
+Reflected server-side cross-site scripting;79
+Binding a socket to all network interfaces
+Hard-coded credentials
+Arbitrary file write during tarfile extraction;22
+Inefficient regular expression
+Overly permissive file permissions
+Unsafe shell command constructed from library input;77,78
+Cors misconfiguration with credentials
+Insecure randomness
+Use of insecure SSL/TLS version
+Uncontrolled command line;77,78
+Deserialization of user-controlled data;502
+Uncontrolled data used in path expression;22
+Construction of a cookie using user-supplied input
+Clear-text logging of sensitive information
+Polynomial regular expression used on uncontrolled data
+Predictable token
+Timing attack against Hash
+Clear-text storage of sensitive information
+Server Side Template Injection;94
+Bad HTML filtering regexp
+Arbitrary file write during a tarball extraction from a user controlled source;22
+Information exposure through an exception
+Accepting unknown SSH host keys when using Paramiko
+Arbitrary file access during archive extraction ("Zip Slip");22
+Flask app is run in debug mode
+Code injection;94
+CSRF protection weakened or disabled
+Regular expression injection
+Csv Injection
+Timing attack against header value
+Use of a broken or weak cryptographic algorithm
+Timing attack against secret
