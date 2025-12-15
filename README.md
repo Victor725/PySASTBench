@@ -9,11 +9,13 @@ Using this dataset, we conducted a large scale empirical evaluation of eight sta
 
 See  “RealworldDataset.csv” and "SyntheticDataset.csv" in this repository.
 
-Programs in the datasets will be available upon publication.
+SyntheticDataset is available now.
+
+Due to size limit of GitHub, the RealworldDataset will soon be uploaded to another location.
 
 # Source code
 
-All source code will be released.
+Using instructions will be released soon.
 
 # Tool List
 
