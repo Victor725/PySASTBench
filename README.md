@@ -11,7 +11,7 @@ See  “RealworldDataset.csv” and "SyntheticDataset.csv" in this repository.
 
 SyntheticDataset is available now.
 
-Due to size limit of GitHub, the RealworldDataset will soon be uploaded to another location.
+Due to size limit of GitHub, the RealworldDataset has been uploaded to https://zenodo.org/records/17936545
 
 # Source code
 
