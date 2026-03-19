@@ -1,0 +1,46 @@
+imports:
+  - javascript_shared_common_datatype
+patterns:
+  - pattern: |
+      $<SPAN>.$<METHOD>($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: SPAN
+        detection: javascript_third_parties_open_telemetry_span
+        scope: cursor
+      - variable: METHOD
+        values:
+          - addEvent
+          - recordException
+          - setAttribute
+          - setStatus
+      - variable: DATA_TYPE
+        detection: javascript_shared_common_datatype
+        scope: result
+languages:
+  - javascript
+auxiliary:
+  - id: javascript_third_parties_open_telemetry_span
+    patterns:
+      - opentelemetry.trace.getSpan()
+      - span
+skip_data_types:
+  - "Unique Identifier"
+metadata:
+  description: "Leakage of sensitive data to OpenTelemetry"
+  remediation_message: |
+    ## Description
+
+    Leaking sensitive data to third parties like OpenTelemetry is a common cause of data leaks and can lead to data breaches.
+
+    ## Remediations
+
+    - **Do** ensure all sensitive data is removed when sending data to third parties like OpenTelemetry.
+
+    ## References
+    - [OpenTelemetry Docs](https://opentelemetry.io/docs/)
+  cwe_id:
+    - 201
+  id: javascript_third_parties_open_telemetry
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_third_parties_open_telemetry
+  cloud_code_suggestions: true
+severity: medium

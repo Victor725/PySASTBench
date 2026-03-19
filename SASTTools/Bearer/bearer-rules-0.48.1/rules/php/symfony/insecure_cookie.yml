@@ -1,0 +1,94 @@
+imports:
+  - php_shared_lang_instance
+patterns:
+  - pattern: |
+      $<CLASS>::create($<_>, $<_>, $<_>, $<_>, $<_>, $<SECURE>$<...>)
+    filters:
+      - variable: CLASS
+        regex: \A(\\?Symfony\\Component\\HttpFoundation\\)?Cookie\z
+      - variable: SECURE
+        detection: php_symfony_insecure_cookie_false
+        scope: cursor
+  - pattern: |
+      $<CLASS>::create(secure: $<SECURE>)
+    filters:
+      - variable: CLASS
+        regex: \A(\\?Symfony\\Component\\HttpFoundation\\)?Cookie\z
+      - variable: SECURE
+        detection: php_symfony_insecure_cookie_false
+        scope: cursor
+  - pattern: |
+      new $<CLASS>($<_>, $<_>, $<_>, $<_>, $<_>, $<SECURE>$<...>)
+    filters:
+      - variable: CLASS
+        regex: \A(\\?Symfony\\Component\\HttpFoundation\\)?Cookie\z
+      - variable: SECURE
+        detection: php_symfony_insecure_cookie_false
+        scope: cursor
+  - pattern: |
+      new $<CLASS>(secure: $<SECURE>)
+    filters:
+      - variable: CLASS
+        regex: \A(\\?Symfony\\Component\\HttpFoundation\\)?Cookie\z
+      - variable: SECURE
+        detection: php_symfony_insecure_cookie_false
+        scope: cursor
+  - pattern: $<COOKIE>->withSecure($<SECURE>)
+    filters:
+      - variable: COOKIE
+        detection: php_symfony_insecure_cookie_instance
+        scope: cursor
+      - variable: SECURE
+        detection: php_symfony_insecure_cookie_false
+        scope: cursor
+auxiliary:
+  - id: php_symfony_insecure_cookie_false
+    patterns:
+      - "false;"
+  - id: php_symfony_insecure_cookie_instance
+    patterns:
+      - pattern: $<INSTANCE>;
+        filters:
+          - variable: INSTANCE
+            detection: php_shared_lang_instance
+            scope: cursor
+            filters:
+              - variable: CLASS
+                regex: \A(\\?Symfony\\Component\\HttpFoundation\\)?Cookie\z
+      - pattern: |
+          $<CLASS>::create()
+        filters:
+          - variable: CLASS
+            regex: \A(\\?Symfony\\Component\\HttpFoundation\\)?Cookie\z
+      - pattern: $<COOKIE>->$<_>()
+        filters:
+          - variable: COOKIE
+            detection: php_symfony_insecure_cookie_instance
+            scope: cursor
+languages:
+  - php
+metadata:
+  description: Missing Secure option in cookie configuration
+  remediation_message: |-
+    ## Description
+
+    When a cookie lacks the Secure attribute, it can be transmitted over insecure connections, making it vulnerable to interception by unauthorized parties. The Secure attribute is important because it instructs the browser to only send the cookie over HTTPS, enhancing security.
+
+    ## Remediations
+
+    - **Do** set the `Secure` attribute to `true` for cookies to ensure they are only sent over HTTPS.
+      ```php
+      $cookie = Cookie::create($name, $value);
+      $cookie->withSecure(true);
+      ```
+
+    ## References
+
+    - [OWASP Session Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html)
+    - [OWASP Cookies Properties](https://owasp.org/www-community/controls/SecureCookieAttribute)
+  cwe_id:
+    - 614
+  id: php_symfony_insecure_cookie
+  documentation_url: https://docs.bearer.com/reference/rules/php_symfony_insecure_cookie
+  cloud_code_suggestions: true
+severity: medium

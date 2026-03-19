@@ -1,0 +1,75 @@
+imports:
+  - ruby_shared_common_datatype
+patterns:
+  - pattern: |
+      $<_>.rollbar_context = $<DATA_TYPE>
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      Rollbar.$<METHOD>($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: METHOD
+        values:
+          - critical
+          - error
+          - debug
+          - info
+          - warning
+          - scope
+          - scope!
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      Rollbar.log($<_>, $<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      $<INSTANCE>.scope($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: INSTANCE
+        detection: ruby_third_parties_rollbar_scope
+        scope: cursor
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      Rollbar.scoped($<...>$<DATA_TYPE>$<...>)$<...>
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+languages:
+  - ruby
+auxiliary:
+  - id: ruby_third_parties_rollbar_scope
+    patterns:
+      - |
+        Rollbar.scope()
+skip_data_types:
+  - "Unique Identifier"
+metadata:
+  description: "Leakage of sensitive data to Rollbar"
+  remediation_message: |
+    ## Description
+
+    Leaking sensitive data to third-party loggers like Rollbar is a common cause of data leaks and can lead to data breaches.
+
+    ## Remediations
+
+    - **Do** ensure all sensitive data is removed when sending data to third-party loggers like Rollbar.
+
+    ## References
+    - [Rollbar docs](https://docs.rollbar.com/docs/ruby)
+    - [Scrubbing items](https://docs.rollbar.com/docs/ruby#section-scrubbing-items)
+  cwe_id:
+    - 201
+  associated_recipe: Rollbar
+  id: ruby_third_parties_rollbar
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_third_parties_rollbar
+  cloud_code_suggestions: true
+severity: medium

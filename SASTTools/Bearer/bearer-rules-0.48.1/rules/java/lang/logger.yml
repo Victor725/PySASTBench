@@ -1,0 +1,51 @@
+imports:
+  - java_shared_lang_datatype
+  - java_shared_lang_logger_methods
+patterns:
+  - pattern: |
+      $<LOG>.$<METHOD>($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: DATA_TYPE
+        detection: java_shared_lang_datatype
+        scope: result
+      - variable: METHOD
+        detection: java_shared_lang_logger_methods
+      - variable: LOG
+        values:
+          - log
+          - logger
+languages:
+  - java
+skip_data_types:
+  - "Unique Identifier"
+severity: medium
+metadata:
+  description: Leakage of sensitive information in logger message
+  remediation_message: |-
+    ## Description
+
+    Sensitive information leakage in logger messages can compromise user privacy and security. This vulnerability occurs when sensitive data, such as personal identifiable information (PII), is included in log messages, making it accessible to unauthorized individuals.
+
+    ## Remediations
+
+    - **Do not** include sensitive data in logger messages. This can lead to unintended exposure of personal or confidential information.
+      ```java
+      logger.info(user.email) // unsafe
+      ```
+    - **Do** use non-sensitive, unique identifiers to refer to users or entities in log messages. This approach maintains privacy while still allowing for effective logging.
+      ```java
+      logger.info(user.uuid)
+      ```
+    - **Do** log static messages that do not contain dynamic variables or attributes. This minimizes the risk of accidentally logging sensitive information.
+      ```java
+      logger.info("user signed in")
+      ```
+
+    ## References
+
+    - [OWASP Logging Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html)
+  cwe_id:
+    - 532
+  id: java_lang_logger
+  documentation_url: https://docs.bearer.com/reference/rules/java_lang_logger
+  cloud_code_suggestions: true

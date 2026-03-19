@@ -1,0 +1,48 @@
+imports:
+  - ruby_shared_common_datatype
+patterns:
+  - pattern: |
+      Rails.logger.$<METHOD>($<DATA_TYPE>)
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+      - variable: METHOD
+        values:
+          # - debug
+          - info
+          - warn
+          - error
+          - fatal
+          - unknown
+languages:
+  - ruby
+skip_data_types:
+  - "Unique Identifier"
+metadata:
+  description: "Leakage of sensitive information in logger message"
+  remediation_message: |-
+    ## Description
+
+    Sensitive information leakage in logger messages can compromise user privacy and security. This vulnerability occurs when sensitive data, such as personal identifiable information (PII), is included in log messages, making it accessible to unauthorized individuals.
+
+    ## Remediations
+
+    - **Do not** include sensitive data in logger messages. This can lead to unintended exposure of personal or confidential information.
+      ```ruby
+      Rails.logger.info('User is: #{user.email}') # unsafe
+      ```
+    - **Do** use non-sensitive, unique identifiers to reference users or other entities in log messages. This approach maintains privacy while still allowing for effective logging.
+      ```ruby
+      Rails.logger.info('User is: #{user.uuid}')
+      ```
+
+    ## References
+
+    - [OWASP Logging Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html)
+  cwe_id:
+    - 532
+  id: ruby_rails_logger
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_rails_logger
+  cloud_code_suggestions: true
+severity: medium

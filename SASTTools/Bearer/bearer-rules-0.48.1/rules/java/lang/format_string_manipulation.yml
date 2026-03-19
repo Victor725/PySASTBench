@@ -1,0 +1,125 @@
+imports:
+  - java_shared_lang_instance
+  - java_shared_lang_user_input
+patterns:
+  - pattern: String.format($<USER_INPUT>$<...>);
+    filters:
+      - variable: USER_INPUT
+        detection: java_shared_lang_user_input
+  - pattern: String.format($<FORMAT_STRING>, $<USER_INPUT>$<...>);
+    filters:
+      - not:
+          variable: FORMAT_STRING
+          detection: java_lang_format_string_manipulation_format_string
+      - variable: USER_INPUT
+        detection: java_shared_lang_user_input
+  - pattern: System.out.$<METHOD>($<USER_INPUT>$<...>);
+    filters:
+      - variable: METHOD
+        values:
+          - format
+          - printf
+      - variable: USER_INPUT
+        detection: java_shared_lang_user_input
+  - pattern: System.out.$<METHOD>($<FORMAT_STRING>, $<USER_INPUT>$<...>);
+    filters:
+      - not:
+          variable: FORMAT_STRING
+          detection: java_lang_format_string_manipulation_format_string
+      - variable: METHOD
+        values:
+          - format
+          - printf
+      - variable: USER_INPUT
+        detection: java_shared_lang_user_input
+  - pattern: $<JAVA_FORMATTER>.format($<USER_INPUT>$<...>);
+    filters:
+      - variable: JAVA_FORMATTER
+        detection: java_shared_lang_instance
+        scope: cursor
+        filters:
+          - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+            regex: \A(java\.util\.)?Formatter\z
+      - variable: USER_INPUT
+        detection: java_shared_lang_user_input
+  - pattern: $<JAVA_FORMATTER>.format($<FORMAT_STRING>, $<USER_INPUT>$<...>);
+    filters:
+      - not:
+          variable: FORMAT_STRING
+          detection: java_lang_format_string_manipulation_format_string
+      - variable: JAVA_FORMATTER
+        detection: java_shared_lang_instance
+        scope: cursor
+        filters:
+          - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+            regex: \A(java\.util\.)?Formatter\z
+      - variable: USER_INPUT
+        detection: java_shared_lang_user_input
+  - pattern: $<JAVA_PRINT_STREAM>.$<METHOD>($<USER_INPUT>$<...>);
+    filters:
+      - variable: JAVA_PRINT_STREAM
+        detection: java_shared_lang_instance
+        scope: cursor
+        filters:
+          - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+            regex: \A(java\.io\.)?PrintStream\z
+      - variable: METHOD
+        values:
+          - format
+          - printf
+      - variable: USER_INPUT
+        detection: java_shared_lang_user_input
+  - pattern: $<JAVA_PRINT_STREAM>.$<METHOD>($<FORMAT_STRING>, $<USER_INPUT>$<...>);
+    filters:
+      - not:
+          variable: FORMAT_STRING
+          detection: java_lang_format_string_manipulation_format_string
+      - variable: JAVA_PRINT_STREAM
+        detection: java_shared_lang_instance
+        scope: cursor
+        filters:
+          - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+            regex: \A(java\.io\.)?PrintStream\z
+      - variable: METHOD
+        values:
+          - format
+          - printf
+      - variable: USER_INPUT
+        detection: java_shared_lang_user_input
+auxiliary:
+  - id: java_lang_format_string_manipulation_format_string
+    patterns:
+      - pattern: $<FORMAT_STRING>;
+        filters:
+          - variable: FORMAT_STRING
+            string_regex: (%s)+
+languages:
+  - java
+metadata:
+  description: Unsanitized user input in format string detected
+  remediation_message: |-
+    ## Description
+
+    Using unsanitized user input as the format string in format functions exposes your application to potential attacks. This vulnerability allows attackers to craft format strings that can lead to unauthorized data exposure or cause your application to crash.
+
+    ## Remediations
+
+    - **Do not** use user input directly as the format string in formatting functions. This applies to any situation where the first argument (or second, if a locale is specified) is expected to be a format string.
+      ```java
+      String.format(request.getParameter("foo"), "bar"); // unsafe
+      String.format(Locale.US, request.getParameter("foo"), "bar"); // unsafe
+      ```
+    - **Do** use hard-coded format strings when working with formatting functions. This ensures that the format string is not influenced by external input, mitigating the risk of format string vulnerabilities.
+      ```java
+      String.format("Strings: %s", request.getParameter("foo"), "bar");
+      String.format(Locale.US, "Strings: %s", request.getParameter("foo"), "bar");
+      ```
+
+    ## References
+
+    - [OWASP Testing for Format String Injection](https://owasp.org/www-project-web-security-testing-guide/stable/4-Web_Application_Security_Testing/07-Input_Validation_Testing/13-Testing_for_Format_String_Injection)
+  cwe_id:
+    - 134
+  id: java_lang_format_string_manipulation
+  documentation_url: https://docs.bearer.com/reference/rules/java_lang_format_string_manipulation
+severity: high

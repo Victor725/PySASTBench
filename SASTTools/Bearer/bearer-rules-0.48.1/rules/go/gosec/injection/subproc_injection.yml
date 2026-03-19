@@ -1,0 +1,58 @@
+imports:
+  - go_shared_lang_dynamic_input_combined
+patterns:
+  - pattern: |
+      exec.CommandContext($<_>, $<...>$<INPUT>$<...>)
+    filters:
+      - variable: INPUT
+        detection: go_shared_lang_dynamic_input_combined
+  - pattern: |
+      exec.Command($<...>$<INPUT>$<...>)
+    filters:
+      - variable: INPUT
+        detection: go_shared_lang_dynamic_input_combined
+  - pattern: |
+      syscall.ForkExec($<INPUT>$<...>)
+    filters:
+      - variable: INPUT
+        detection: go_shared_lang_dynamic_input_combined
+  - pattern: |
+      syscall.StartProcess($<INPUT>$<...>)
+    filters:
+      - variable: INPUT
+        detection: go_shared_lang_dynamic_input_combined
+languages:
+  - go
+severity: critical
+metadata:
+  description: Unsanitized dynamic input in OS command
+  remediation_message: |-
+    ## Description
+
+    Using unsanitized dynamic or external input in an OS command is a critical security flaw that can enable attackers to execute unauthorized commands on the host operating system, potentially leading to a complete system takeover.
+
+    ## Remediations
+
+    - **Do not** construct OS commands or command-line arguments using externally-supplied information. This practice can introduce command injection vulnerabilities.
+      ```go
+      cmd := exec.Command("bash", "-c", "echo " + externalInput) // unsafe
+      ```
+    - **Do** validate all external input against a strict set of rules to ensure it does not include harmful characters or patterns.
+      ```go
+      if !regexp.MustCompile(`^[a-zA-Z0-9]+$`).MatchString(externalInput) {
+        log.Fatal("Invalid input")
+      }
+      ```
+    - **Do** use hardcoded arguments when invoking OS commands to prevent external input from altering the command's execution.
+      ```go
+      cmd := exec.Command("ls", "-l", "/var/log")
+      ```
+    - **Do** prefer native libraries or programming language features over invoking shell commands for enhanced security and efficiency.
+
+    ## References
+
+    - [OWASP OS Command Injection Defense Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/OS_Command_Injection_Defense_Cheat_Sheet.html)
+  cwe_id:
+    - 78
+  id: go_gosec_injection_subproc_injection
+  documentation_url: https://docs.bearer.com/reference/rules/go_gosec_injection_subproc_injection

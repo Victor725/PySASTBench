@@ -1,0 +1,91 @@
+imports:
+  - javascript_shared_third_parties_sanitize_html_sanitizer
+patterns:
+  - pattern: |
+      document.$<METHOD>($<...>$<DATA>$<...>)
+    filters:
+      - variable: METHOD
+        values:
+          - write
+          - writeLn
+      - variable: DATA
+        detection: javascript_lang_dangerous_insert_html_unsanitized_input
+        scope: result
+  - pattern: |
+      $<_>.$<PROPERTY> = $<DATA>
+    filters:
+      - variable: PROPERTY
+        values:
+          - outerHTML
+          - innerHTML
+      - variable: DATA
+        detection: javascript_lang_dangerous_insert_html_unsanitized_input
+        scope: result
+  - pattern: |
+      $<_>.$<METHOD>($<...>$<DATA>$<...>)
+    filters:
+      - variable: METHOD
+        values:
+          - setHTML
+          - insertAdjacentHTML
+          - createElement
+          - replaceWith
+          - replaceChildren
+      - variable: DATA
+        detection: javascript_lang_dangerous_insert_html_unsanitized_input
+        scope: result
+auxiliary:
+  - id: javascript_lang_dangerous_insert_html_string_value
+    patterns:
+      - pattern: |
+          $<STRING_VALUE>
+        filters:
+          - variable: STRING_VALUE
+            string_regex: ""
+  - id: javascript_lang_dangerous_insert_html_sanitizer
+    patterns:
+      - pattern: $<HTML_SANITIZER>
+        filters:
+          - variable: HTML_SANITIZER
+            detection: javascript_shared_third_parties_sanitize_html_sanitizer
+            scope: cursor
+      - pattern: $<RECEIVER>()
+        focus: RECEIVER
+  - id: javascript_lang_dangerous_insert_html_unsanitized_input
+    sanitizer: javascript_lang_dangerous_insert_html_sanitizer
+    patterns:
+      - pattern: $<UNSANITIZED_INPUT:identifier>
+        filters:
+          - not:
+              # to avoid ternary logic, we use a separate rule rather than
+              # using string_regex directly here
+              variable: UNSANITIZED_INPUT
+              detection: javascript_lang_dangerous_insert_html_string_value
+              scope: cursor
+languages:
+  - javascript
+severity: high
+metadata:
+  description: "Unsanitized user input in dynamic HTML insertion (XSS)"
+  remediation_message: |-
+    ## Description
+
+    Unsanitized user input in dynamic HTML insertion can lead to Cross-Site Scripting (XSS) attacks. This vulnerability arises when user-provided data is directly inserted into the DOM without proper sanitization, potentially allowing attackers to execute malicious scripts.
+
+    ## Remediations
+
+    - **Do** use an HTML sanitization library to clean user input before inserting it into the HTML. This step helps prevent XSS attacks by removing or neutralizing any potentially harmful scripts.
+      ```javascript
+      import sanitizeHtml from 'sanitize-html';
+
+      const html = `<strong>${user.Input}</strong>`;
+      document.body.innerHTML = sanitizeHtml(html);
+      ```
+
+    ## References
+
+    - [OWASP XSS explained](https://owasp.org/www-community/attacks/xss/)
+  cwe_id:
+    - 79
+  id: javascript_lang_dangerous_insert_html
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_lang_dangerous_insert_html

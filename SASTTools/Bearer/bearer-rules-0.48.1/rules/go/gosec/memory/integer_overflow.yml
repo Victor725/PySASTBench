@@ -1,0 +1,43 @@
+patterns:
+  - pattern: $<INT>($<X>)
+    filters:
+      - variable: INT
+        values:
+          - int16
+          - int32
+      - variable: X
+        detection: go_gosec_memory_integer_overflow_source
+auxiliary:
+  - id: go_gosec_memory_integer_overflow_source
+    patterns:
+      - $<!>$<_>$<...> := strconv.Atoi($<...>)
+languages:
+  - go
+metadata:
+  description: "Possible integer overflow"
+  remediation_message: |-
+    ## Description
+
+    In Go, the size of an `int` type is not fixed and depends on the system architecture (32 bits on a 32-bit system and 64 bits on a 64-bit system). This can lead to integer overflow when a value is converted from `strconv.Atoi` to a smaller integer type like `int32` or `int16`, and the value exceeds what the smaller type can hold. Integer overflow can result in unpredictable behavior and severe bugs.
+
+    ## Remediations
+
+    - **Do** check values before conversion to a smaller type. Ensure the value does not exceed the maximum value the target type can hold.
+    - **Do** always handle errors from conversion functions like `strconv.Atoi` to promptly address and manage conversion issues.
+    - **Do** use fixed-size types like `int32` or `int64` when possible to avoid overflow issues that arise from architecture-dependent sizes.
+      ```go
+        if intValue, err := strconv.Atoi(stringValue); err == nil {
+          if intValue >= math.MinInt16 && intValue <= math.MaxInt16 {
+            int16Value := int16(intValue)
+          }
+        }
+      ```
+
+    ## References
+
+    - [Go math package for integer limits](https://pkg.go.dev/math#pkg-constants)
+  cwe_id:
+    - 190
+  id: go_gosec_memory_integer_overflow
+  documentation_url: https://docs.bearer.com/reference/rules/go_gosec_memory_integer_overflow
+severity: medium

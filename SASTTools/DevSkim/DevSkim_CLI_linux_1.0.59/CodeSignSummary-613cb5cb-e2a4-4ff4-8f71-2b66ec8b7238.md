@@ -1,0 +1,32 @@
+﻿ | FileName                  | Status | Component | FileSize | TotalTime(sec) | Upload(sec) | Submit(sec) | SignWait(sec) | Retry Count | 
+ |---------------------------|--------|-----------|----------|----------------|-------------|-------------|---------------|-------------|
+ | JsonCons.Utilities.dll    | Pass   | Sign      | 23KB     | 83.08          | 0.47        | 2.62        | 78.36         | 0           | 
+ | YamlDotNet.dll            | Pass   | Sign      | 286.5KB  | 83.08          | 0.68        | 0.57        | 78.36         | 0           | 
+ | SharpCompress.dll         | Pass   | Sign      | 592.5KB  | 83.08          | 0.82        | 2.45        | 78.36         | 0           | 
+ | Serilog.Sinks.File.dll    | Pass   | Sign      | 30KB     | 107.58         | 0.47        | 0.81        | 102.86        | 0           | 
+ | og.Extensions.Logging.dll | Pass   | Sign      | 27KB     | 107.58         | 0.48        | 0.82        | 102.86        | 0           | 
+ | NLog.dll                  | Pass   | Sign      | 934KB    | 95.82          | 0.84        | 0.68        | 91.1          | 0           | 
+ | Newtonsoft.Json.dll       | Pass   | Sign      | 695.77KB | 95.82          | 0.84        | 0.59        | 91.1          | 0           | 
+ | lzo.net.dll               | Pass   | Sign      | 10.5KB   | 83.08          | 0.42        | 2.45        | 78.36         | 0           | 
+ | LibGit2Sharp.dll          | Pass   | Sign      | 502.5KB  | 118.5          | 0.83        | 3.28        | 113.78        | 0           | 
+ | e.Compare-NET-Objects.dll | Pass   | Sign      | 103.5KB  | 83.07          | 0.58        | 0.59        | 78.36         | 0           | 
+ | JsonCons.JsonPath.dll     | Pass   | Sign      | 69.5KB   | 95.81          | 0.54        | 2.57        | 91.1          | 0           | 
+ | SharpCode.SharpZipLib.dll | Pass   | Sign      | 252KB    | 83.05          | 0.66        | 0.79        | 78.36         | 0           | 
+ | Glob.dll                  | Pass   | Sign      | 24KB     | 118.48         | 0.44        | 0.65        | 113.78        | 0           | 
+ | s.YamlDotNet.YamlPath.dll | Pass   | Sign      | 36KB     | 95.79          | 0.45        | 0.76        | 91.1          | 0           | 
+ | DiscUtils.Xfs.dll         | Pass   | Sign      | 62.5KB   | 118.47         | 0.5         | 0.55        | 113.78        | 0           | 
+ | DiscUtils.Wim.dll         | Pass   | Sign      | 26.5KB   | 95.79          | 0.75        | 0.53        | 91.1          | 0           | 
+ | DiscUtils.Ntfs.dll        | Pass   | Sign      | 280.5KB  | 95.79          | 0.64        | 3.4         | 91.1          | 0           | 
+ | DiscUtils.Iso9660.dll     | Pass   | Sign      | 62.5KB   | 118.47         | 0.83        | 2.75        | 113.78        | 0           | 
+ | DiscUtils.HfsPlus.dll     | Pass   | Sign      | 45KB     | 83.05          | 0.95        | 2.52        | 78.36         | 0           | 
+ | DiscUtils.Ext.dll         | Pass   | Sign      | 39KB     | 118.47         | 0.69        | 2.49        | 113.78        | 0           | 
+ | DiscUtils.Btrfs.dll       | Pass   | Sign      | 53.5KB   | 83.05          | 0.84        | 0.73        | 78.36         | 0           | 
+ | Serilog.Sinks.Console.dll | Pass   | Sign      | 37.5KB   | 83.05          | 0.82        | 0.67        | 78.36         | 0           | 
+ | DiscUtils.Vmdk.dll        | Pass   | Sign      | 74KB     | 69.37          | 0.92        | 3.14        | 64.68         | 0           | 
+ | DiscUtils.Vhdx.dll        | Pass   | Sign      | 74.5KB   | 129.09         | 0.95        | 0.66        | 124.4         | 0           | 
+ | DiscUtils.Vhd.dll         | Pass   | Sign      | 62.5KB   | 107.54         | 0.99        | 0.53        | 102.86        | 0           | 
+ | DiscUtils.Udf.dll         | Pass   | Sign      | 40KB     | 107.54         | 0.79        | 3.39        | 102.86        | 0           | 
+ | DiscUtils.Streams.dll     | Pass   | Sign      | 129.5KB  | 83.04          | 1.11        | 2.59        | 78.36         | 0           | 
+ | DiscUtils.Fat.dll         | Pass   | Sign      | 81KB     | 69.36          | 1.07        | 2.48        | 64.68         | 0           | 
+ | DiscUtils.Core.dll        | Pass   | Sign      | 260KB    | 69.36          | 1.28        | 0.55        | 64.68         | 0           | 
+ | CommandLine.dll           | Pass   | Sign      | 220KB    | 107.54         | 0.94        | 0.8         | 102.86        | 0           | 

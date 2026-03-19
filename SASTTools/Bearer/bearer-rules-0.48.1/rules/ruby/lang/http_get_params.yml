@@ -1,0 +1,79 @@
+languages:
+  - ruby
+imports:
+  - ruby_shared_common_datatype
+patterns:
+  - pattern: |
+      URI.encode_www_form($<DATA_TYPE>)
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      URI($<DATA_TYPE>)
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      $<CLIENT>.get($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: CLIENT
+        values:
+          - Curl
+          - Excon
+          - Faraday
+          - HTTP
+          - HTTParty
+          - HTTPX
+          - RestClient
+          - Typhoeus
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+metadata:
+  description: "Leakage of sensitive data in HTTP GET parameters"
+  remediation_message: |-
+    ## Description
+
+    Sensitive data should never be sent as part of the query string in HTTP GET requests. This is bad practice that can expose sensitive information since query strings can be cached or logged in server logs, and can be seen in browser history, making them vulnerable to unauthorized access.
+
+    ## Remediations
+
+    - **Do not** send sensitive data through HTTP GET parameters. This method exposes information in plain text, even when using HTTPS.
+      ```ruby
+      HTTParty.get(
+        'https://secure-api.com/user',
+        {
+          email: user.email # unsafe
+        }
+      )
+      ```
+    - **Do** use the HTTP POST method to send sensitive data securely. POST requests do not expose data in the URL.
+      ```ruby
+      HTTParty.post(
+        'https://secure-api.com/user',
+        body: {
+          email: user.email,
+        }
+      )
+      ```
+    - **Do** use identifiers that do not expose personal or sensitive information, for cases where a GET request is required
+      ```ruby
+      HTTParty.get(
+        'https://secure-api.com/user',
+        {
+          id: user.uuid
+        }
+      )
+      ```
+
+    ## References
+
+    - [OWASP information exposure through URL query strings](https://owasp.org/www-community/vulnerabilities/Information_exposure_through_query_strings_in_url)
+  cwe_id:
+    - 598
+  id: ruby_lang_http_get_params
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_lang_http_get_params
+  cloud_code_suggestions: true
+severity: medium

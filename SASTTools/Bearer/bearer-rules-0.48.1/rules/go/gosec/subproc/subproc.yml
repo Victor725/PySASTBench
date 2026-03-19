@@ -1,0 +1,75 @@
+imports:
+  - go_shared_lang_dynamic_input_combined
+patterns:
+  - pattern: $<CLIENT>.Call($<...>$<INPUT>$<...>)
+    filters:
+      - variable: CLIENT
+        detection: go_gosec_subproc_subproc_net_rpc_client
+      - variable: INPUT
+        detection: go_shared_lang_dynamic_input_combined
+  - pattern: $<VALUE>.$<METHOD>($<...>$<INPUT>$<...>)
+    filters:
+      - variable: VALUE
+        detection: go_gosec_subproc_subproc_net_value
+      - variable: METHOD
+        values:
+          - FieldByName
+          - FieldByNameFunc
+      - variable: INPUT
+        detection: go_shared_lang_dynamic_input_combined
+auxiliary:
+  - id: go_gosec_subproc_subproc_net_rpc_client
+    patterns:
+      - pattern: $<NET_RPC>.$<METHOD>()
+        filters:
+          - variable: NET_RPC
+            detection: go_gosec_subproc_subproc_net_rpc_import
+          - variable: METHOD
+            values:
+              - Dial
+              - DialHTTP
+              - DialHTTPPath
+              - NewClient
+              - NewClientWithCodec
+  - id: go_gosec_subproc_subproc_net_rpc_import
+    patterns:
+      - import $<!>"net/rpc"
+      - |
+        import (
+          $<!>"net/rpc"
+        )
+  - id: go_gosec_subproc_subproc_net_value
+    patterns:
+      - pattern: $<VALUE>.ValueOf()
+        filters:
+          - variable: VALUE
+            detection: go_gosec_subproc_subproc_net_rpc_reflect_import
+  - id: go_gosec_subproc_subproc_net_rpc_reflect_import
+    patterns:
+      - import $<!>"reflect"
+      - |
+        import (
+          $<!>"reflect"
+        )
+languages:
+  - go
+severity: critical
+metadata:
+  description: Unsanitized external input in code execution
+  remediation_message: |-
+    ## Description
+
+    Unsanitized external input in code execution can result in code injection. This vulnerability arises when external or user-provided data is directly used in the execution flow of a program without proper sanitization, potentially leading to unauthorized actions or access.
+
+    ## Remediations
+
+    - **Do not** pass unsanitized external input directly to execution functions. This practice can introduce code injection vulnerabilities.
+    - **Do** implement thorough input validation. Ensure all external input is checked against a strict set of rules to verify it does not contain harmful characters or patterns.
+
+    ## References
+
+    - [OWASP Code injection explained](https://owasp.org/www-community/attacks/Code_Injection)
+  cwe_id:
+    - 94
+  id: go_gosec_subproc_subproc
+  documentation_url: https://docs.bearer.com/reference/rules/go_gosec_subproc_subproc

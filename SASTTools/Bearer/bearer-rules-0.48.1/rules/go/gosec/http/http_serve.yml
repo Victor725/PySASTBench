@@ -1,0 +1,63 @@
+patterns:
+  - pattern: $<HTTP_INIT>.$<METHOD>()
+    filters:
+      - variable: METHOD
+        values:
+          - ListenAndServe
+          - ListenAndServeTLS
+          - Serve
+          - ServeTLS
+      - variable: HTTP_INIT
+        detection: go_gosec_http_http_serve_http_init
+        scope: result
+auxiliary:
+  - id: go_gosec_http_http_serve_http_init
+    patterns:
+      - import $<!>"net"
+      - import $<!>"net/http"
+      - pattern: |
+          import (
+            $<!>"net"
+          )
+      - pattern: |
+          import (
+            $<!>"net/http"
+          )
+languages:
+  - go
+metadata:
+  description: "Usage of vulnerable 'serve' function"
+  remediation_message: |-
+    ## Description
+
+    The default `serve` functions in Go's `net/http` package are susceptible to resource consumption attacks. This vulnerability arises when attackers flood the server with incomplete or persistent connections, depleting its resources and blocking new legitimate connections.
+
+    ## Remediations
+
+    - **Do not** use default serve functions like `http.ListenAndServe` and `http.Serve` in production environments. You cannot set timeouts for these functions, making the server vulnerable to attacks.
+      ```go
+      http.ListenAndServe(":8080", nil) // unsafe
+      ```
+    - **Do** create a custom `http.Server` object with configured timeouts to safeguard against resource exhaustion. Set `ReadHeaderTimeout`, `ReadTimeout`, `WriteTimeout`, and `IdleTimeout` to appropriate values.
+      ```go
+      myServer := &http.Server{
+          Addr:             "localhost:8000",
+          ReadHeaderTimeout: 15 * time.Second,
+          ReadTimeout:      15 * time.Second,
+          WriteTimeout:     10 * time.Second,
+          IdleTimeout:      30 * time.Second,
+      }
+      ```
+    - **Do** enforce timeouts on individual requests using `http.TimeoutHandler`. This wrapper ensures that the server does not indefinitely wait for a request to finish, preventing potential denial of service.
+
+    ## References
+
+    - [http.Server Timeouts Documentation](https://pkg.go.dev/net/http#Server)
+    - [Guide to Setting Request-Based Timeouts](https://pkg.go.dev/net/http#TimeoutHandler)
+    - [Understanding the Slowloris Attack](https://en.wikipedia.org/wiki/Slowloris_(computer_security))
+
+  cwe_id:
+    - 400
+  id: go_gosec_http_http_serve
+  documentation_url: https://docs.bearer.com/reference/rules/go_gosec_http_http_serve
+severity: high

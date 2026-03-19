@@ -1,0 +1,43 @@
+patterns:
+  - pattern: $<HTTP>.Error($<_>, $<ERROR_DETAILS>$<...>)
+    filters:
+      - variable: HTTP
+        detection: go_lang_information_leakage_http_init
+        scope: cursor
+      - variable: ERROR_DETAILS
+        detection: go_lang_information_leakage_error_details
+        scope: cursor
+auxiliary:
+  - id: go_lang_information_leakage_error_details
+    patterns:
+      - $<_>.Error()
+  - id: go_lang_information_leakage_http_init
+    patterns:
+      - import $<!>"net/http"
+      - |
+        import (
+          $<!>"net/http"
+        )
+languages:
+  - go
+severity: low
+metadata:
+  description: Leakage of sensitive information in exception message
+  remediation_message: |-
+    ## Description
+
+    Leakage of sensitive information in exception messages can compromise your application's security. This occurs when exception messages reveal too much about your application's internal workings or user-specific data, potentially aiding attackers in crafting targeted attacks such as path traversal.
+
+    ## Remediations
+
+    - **Do not** include sensitive information in exception messages. This prevents accidental exposure of application details or user data.
+    - **Do** limit the information logged in error messages to only what is necessary for troubleshooting. This minimizes the risk of information leakage.
+
+    ## References
+
+    - [Web Application Security Consortium: Information Leakage](http://projects.webappsec.org/w/page/13246936/Information%20Leakage)
+  cwe_id:
+    - 209
+  id: go_lang_information_leakage
+  documentation_url: https://docs.bearer.com/reference/rules/go_lang_information_leakage
+  cloud_code_suggestions: true

@@ -1,0 +1,47 @@
+imports:
+  - javascript_shared_common_datatype
+patterns:
+  - pattern: |
+      dataLayer.push($<DATA_TYPE>)
+    filters:
+      - variable: DATA_TYPE
+        detection: javascript_shared_common_datatype
+        scope: result
+  - pattern: |
+      window.dataLayer.push($<DATA_TYPE>)
+    filters:
+      - variable: DATA_TYPE
+        detection: javascript_shared_common_datatype
+        scope: result
+languages:
+  - javascript
+skip_data_types:
+  - "Unique Identifier"
+metadata:
+  description: "Leakage of sensitive data to Google Tag Manager"
+  remediation_message: |-
+    ## Description
+
+    Leaking sensitive data to third-party services and tools like Google Tag Manager is a common cause of data leaks and can lead to data breaches.
+
+    ## Remediations
+
+    - **Do** ensure all sensitive data is removed when sending data to analytics libraries like Google Analytics.
+    - **Do** use unique identifiers from the database if you really need to identify users.
+      ```javascript
+      datalayer.push({
+        user: {
+          uuid: user.uuid
+        }
+      })
+      ```
+
+    ## References
+    - [OWASP logging cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html)
+
+  cwe_id:
+    - 201
+  id: javascript_third_parties_google_tag_manager
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_third_parties_google_tag_manager
+  cloud_code_suggestions: true
+severity: medium

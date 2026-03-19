@@ -1,0 +1,68 @@
+patterns:
+  - pattern: |
+      tls.Config{$<...>CipherSuites: []$<_>{$<...>$<CIPHERS>$<...>}$<...>}
+    filters:
+      - variable: CIPHERS
+        values:
+          - tls.TLS_AES_128_GCM_SHA256
+          - tls.TLS_AES_256_GCM_SHA384
+          - tls.TLS_CHACHA20_POLY1305_SHA256
+          - tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+          - tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+          - tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+          - tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+          - tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+          - tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
+          - tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
+          - tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+          - tls.TLS_DHE_RSA_WITH_AES_128_GCM_SHA256
+          - tls.TLS_DHE_RSA_WITH_AES_256_GCM_SHA384
+  - pattern: |
+      tls.CipherSuite{$<...>ID: $<CIPHERS>$<...>}
+    filters:
+      - variable: CIPHERS
+        values:
+          - tls.TLS_AES_128_GCM_SHA256
+          - tls.TLS_AES_256_GCM_SHA384
+          - tls.TLS_CHACHA20_POLY1305_SHA256
+          - tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+          - tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+          - tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+          - tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+          - tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+          - tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
+          - tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
+          - tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+          - tls.TLS_DHE_RSA_WITH_AES_128_GCM_SHA256
+          - tls.TLS_DHE_RSA_WITH_AES_256_GCM_SHA384
+languages:
+  - go
+metadata:
+  description: "Usage of insecure cipher"
+  remediation_message: |-
+    ## Description
+
+    Using an insecure cipher suite in your application introduces a significant security risk. These weak cipher suites are susceptible to various attacks, compromising the security of your communications.
+
+    ## Remediations
+
+    - **Do** use modern, secure cipher suites that offer Perfect Forward Secrecy (PFS), such as ECDHE-RSA-AES256-GCM-SHA384 or ECDHE-RSA-CHACHA20-POLY1305. PFS ensures that even if future private keys are compromised, past communications remain secure.
+    - **Do** adopt TLS 1.3 whenever possible, as it includes enhancements that offer better security against various attacks. The Go standard library, for instance, automatically prefers the most secure protocol and cipher suite available.
+      ```go
+      cfg := &tls.Config{
+          MinVersion: tls.VersionTLS13,
+      }
+      ```
+    - **Do not** use obsolete or insecure cipher suites. Avoid any cipher suites that lack support for modern security standards or have known vulnerabilities.
+
+    ## References
+
+    - [Mozilla's SSL Configuration Generator](https://ssl-config.mozilla.org/)
+    - [OWASP TLS Cipher String Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/TLS_Cipher_String_Cheat_Sheet.html)
+    - [RFC 8446 - The Transport Layer Security (TLS) Protocol Version 1.3](https://tools.ietf.org/html/rfc8446)
+
+  cwe_id:
+    - 327
+  id: go_gosec_crypto_bad_tls_settings
+  documentation_url: https://docs.bearer.com/reference/rules/go_gosec_crypto_bad_tls_settings
+severity: high

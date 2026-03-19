@@ -1,0 +1,50 @@
+patterns:
+  - pattern: |
+      os.Create($<PATH>)
+    filters:
+      - variable: PATH
+        detection: go_gosec_filesystem_tempfile_path
+        scope: result
+  - pattern: |
+      $<PACKAGE>.WriteFile($<PATH>$<...>)
+    filters:
+      - variable: PACKAGE
+        values:
+          - ioutil
+          - os
+      - variable: PATH
+        detection: go_gosec_filesystem_tempfile_path
+        scope: result
+auxiliary:
+  - id: go_gosec_filesystem_tempfile_path
+    patterns:
+      - pattern: $<PATH>
+        filters:
+          - variable: PATH
+            regex: (/tmp/.*|/var/tmp/.*)
+languages:
+  - go
+metadata:
+  description: "Permissive temporary file creation"
+  remediation_message: |-
+    ## Description
+
+    Your application creates temporary files in shared system directories like `/tmp` or `/var/tmp` without using secure functions such as `os.CreateTemp`. This method is risky as it could lead to symlink attacks. In such attacks, an attacker predicts the name of the temporary file and creates a symlink to a target file. Consequently, when your application writes to the supposed temporary file, it could unintentionally overwrite or create unauthorized files.
+
+    ## Remediations
+
+    - **Do** use `os.CreateTemp` for creating temporary files. This function helps in securely generating temporary files within a directory that only your application can access, significantly reducing the risk of symlink attacks.
+      ```go
+      f, err := os.CreateTemp(restrictedDir, "temp-*.txt")
+      ```
+    - **Do not** use shared temporary directories for operations that involve sensitive data or require secure file handling.
+    - **Do** ensure temporary files are removed after their intended use to avoid accumulation and potential security risks.
+
+    ## References
+
+    - [Go Documentation: os.CreateTemp](https://pkg.go.dev/os#CreateTemp)
+  cwe_id:
+    - 378
+  id: go_gosec_filesystem_tempfile
+  documentation_url: https://docs.bearer.com/reference/rules/go_gosec_filesystem_tempfile
+severity: medium

@@ -1,0 +1,117 @@
+imports:
+  - java_shared_lang_instance
+  - java_shared_lang_user_input
+patterns:
+  - pattern: new $<TYPE>($<_>, $<USER_INPUT>);
+    filters:
+      - variable: TYPE
+        regex: \A(javax\.servlet\.http\.)?Cookie\z
+      - variable: USER_INPUT
+        detection: java_lang_http_response_splitting_user_input
+        scope: result
+  - pattern: $<COOKIE>.setValue($<USER_INPUT>);
+    filters:
+      - variable: COOKIE
+        detection: java_shared_lang_instance
+        scope: cursor
+        filters:
+          - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+            regex: \A(javax\.servlet\.http\.)?Cookie\z
+      - variable: USER_INPUT
+        detection: java_lang_http_response_splitting_user_input
+        scope: result
+  - pattern: $<HTTP_SERVLET_RES>.$<METHOD>($<_>, $<USER_INPUT>);
+    filters:
+      - variable: HTTP_SERVLET_RES
+        detection: java_shared_lang_instance
+        scope: cursor
+        filters:
+          - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+            regex: \A(javax\.servlet\.http\.)?HttpServletResponse\z
+      - variable: METHOD
+        values:
+          - setHeader
+          - addHeader
+      - variable: USER_INPUT
+        detection: java_lang_http_response_splitting_user_input
+        scope: result
+  - pattern: $<HTTP_SERVLET_RES>.$<METHOD>($<_>, $<USER_INPUT>);
+    filters:
+      - variable: HTTP_SERVLET_RES
+        detection: java_shared_lang_instance
+        scope: cursor
+        filters:
+          - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+            regex: \A(javax\.servlet\.http\.)?HttpServletResponseWrapper\z
+      - variable: METHOD
+        values:
+          - setHeader
+          - addHeader
+      - variable: USER_INPUT
+        detection: java_lang_http_response_splitting_user_input
+        scope: result
+  - pattern: $<HTTP_SERVLET_RES>.$<METHOD>($<_>, $<USER_INPUT>);
+    filters:
+      - variable: HTTP_SERVLET_RES
+        detection: java_shared_lang_instance
+        scope: cursor
+        filters:
+          - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+            regex: \A(javax\.servlet\.http\.)?HttpServletRequest\z
+      - variable: METHOD
+        values:
+          - getParameter
+          - getParameterNames
+          - getParameterValues
+          - getParameterMap
+          - getHeader
+          - getPathInfo
+      - variable: USER_INPUT
+        detection: java_lang_http_response_splitting_user_input
+        scope: result
+auxiliary:
+  - id: java_lang_http_response_splitting_user_input
+    sanitizer: java_lang_http_response_splitting_sanitizer
+    patterns:
+      - pattern: $<UNSANITIZED_USER_INPUT>;
+        filters:
+          - variable: UNSANITIZED_USER_INPUT
+            detection: java_shared_lang_user_input
+            scope: cursor
+  - id: java_lang_http_response_splitting_sanitizer
+    patterns:
+      - pattern: $<CLASS>.unescapeJava($<!>$<_>);
+        filters:
+          - variable: CLASS
+            regex: \A(org\.apache\.commons\.text\.)?StringEscapeUtils\z
+      - pattern: $<ORIGINAL>.replaceAll($<SOURCE>, $<REPLACEMENT>);
+        focus: ORIGINAL
+        filters:
+          - variable: SOURCE
+            string_regex: "\\r\\n|\\\\r\\\\n"
+          - not:
+              variable: REPLACEMENT
+              string_regex: "\\r\\n|\\\\r\\\\n"
+languages:
+  - java
+severity: high
+metadata:
+  description: "Unsanitized user input in HTTP response (XSS)"
+  remediation_message: |-
+    ## Description
+
+    Including unsanitized user input in a HTTP response could allow an attacker inject Carriage Return Line Feed (CRLF) characters into the response. An entirely attacker-controlled response can then be returned, creating a cross-site scripting (XSS) vulnerability.
+
+    ## Remediations
+
+    - **Do not** include user input in cookies or other HTTP headers without proper sanitization. This can prevent attackers from exploiting the input to manipulate the response.
+    - **Do** remove CRLF sequences from user input to mitigate the risk of response splitting and XSS attacks. Use the following code snippet as a reference for sanitizing input in Java:
+      ```java
+      var input = request.getParameter("data");
+      var sanitized = input.replaceAll("\r\n", "");
+      cookie.setValue(sanitized);
+      ```
+  cwe_id:
+    - 79
+  id: java_lang_http_response_splitting
+  documentation_url: https://docs.bearer.com/reference/rules/java_lang_http_response_splitting

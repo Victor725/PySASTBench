@@ -1,0 +1,39 @@
+imports:
+  - java_shared_lang_instance
+patterns:
+  - pattern: $<COOKIE>.setSecure($<FALSE>)
+    filters:
+      - variable: COOKIE
+        detection: java_shared_lang_instance
+        scope: cursor
+        filters:
+          - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+            regex: \A(javax\.servlet\.http\.)?Cookie\z
+      - variable: "FALSE"
+        detection: java_lang_insecure_cookie_false
+        scope: cursor
+auxiliary:
+  - id: java_lang_insecure_cookie_false
+    patterns:
+      - "false;"
+languages:
+  - java
+metadata:
+  description: Missing Secure option in cookie configuration
+  remediation_message: |-
+    ## Description
+
+    When a cookie lacks the Secure option, it can be transmitted over insecure connections, making it vulnerable to interception by unauthorized parties. The Secure option is important because it instructs the browser to only send the cookie over HTTPS, enhancing security.
+
+    ## Remediations
+
+    - **Do** set the `Secure` option to `true` for cookies to ensure they are only sent over HTTPS, enhancing the security of data transmission.
+      ```java
+      cookie.setSecure(true);
+      ```
+  cwe_id:
+    - 614
+  id: java_lang_insecure_cookie
+  documentation_url: https://docs.bearer.com/reference/rules/java_lang_insecure_cookie
+  cloud_code_suggestions: true
+severity: medium

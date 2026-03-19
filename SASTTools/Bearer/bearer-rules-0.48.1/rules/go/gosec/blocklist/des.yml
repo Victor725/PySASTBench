@@ -1,0 +1,31 @@
+patterns:
+  - pattern: |
+      import $<!>"crypto/des"
+  - pattern: |
+      import (
+        $<!>"crypto/des"
+      )
+languages:
+  - go
+metadata:
+  description: "Import of weak encryption algorithm (DES)"
+  remediation_message: |-
+    ## Description
+
+    The Data Encryption Standard (DES) is an outdated encryption algorithm that is officially considered insecure and is no longer recommended for use. DES was withdrawn as a standard by the National Institute of Standards and Technology (NIST) in 2005 because of its 56-bit key size which makes it susceptible to brute-force attacks.
+
+    ## Remediations
+
+    - **Do not** use DES for encrypting data. Its known vulnerabilities and insecurities make it an unsuitable choice for protecting sensitive information.
+    - **Do** implement the Advanced Encryption Standard (AES) with a key size of 256 bits (AES-256) for encryption. AES-256 is recognized for its strong security properties and is widely accepted as a secure replacement for DES.
+
+    ## References
+
+    - [NIST Recommendations](https://csrc.nist.gov/publications/detail/sp/800-131a/rev-2/final)
+    - [AES-256 Encryption](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard)
+
+  cwe_id:
+    - 327
+  id: go_gosec_blocklist_des
+  documentation_url: https://docs.bearer.com/reference/rules/go_gosec_blocklist_des
+severity: high

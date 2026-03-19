@@ -1,0 +1,46 @@
+patterns:
+  - pattern: |
+      $<NET>.Dir("/")
+    filters:
+      - variable: NET
+        detection: go_gosec_filesystem_dirtraversal_init
+        scope: cursor
+auxiliary:
+  - id: go_gosec_filesystem_dirtraversal_init
+    patterns:
+      - pattern: import $<!>"net/http"
+      - pattern: |
+          import (
+            $<!>"net/http"
+          )
+languages:
+  - go
+metadata:
+  description: "Usage of Root directory mounting"
+  remediation_message: |-
+    ## Description
+
+    Mounting the root directory (`/`) on an HTTP server exposes a significant security risk. This setup could allow unauthorized individuals to access and browse system files, potentially leading to information disclosure, data breaches, or further system exploitation.
+
+    ## Remediations
+
+    - **Do not** mount the root directory as the web server's root. Doing so would make the entire filesystem accessible over the web.
+    - **Do** serve files from a specific directory designed for public access. Ensure this directory only contains files intended for public viewing.
+    - **Do** apply strict permissions to the directory being served. This ensures the server process accesses only the files it's meant to serve.
+    - **Do** utilize server configuration files, such as `.htaccess` for Apache HTTP Server, to control access to directories if your server supports it.
+    - **Do** consider isolating your server environment using containerization or virtualization techniques. This limits potential damage in case of a security breach by enforcing strict access controls.
+    - **Do** conduct regular audits of your filesystem and the files your server is hosting. This helps ensure no sensitive information is accidentally exposed.
+
+    ## References
+
+    - [Go Documentation: http package](https://pkg.go.dev/net/http)
+    - [OWASP: Securing File Uploads](https://owasp.org/www-community/vulnerabilities/Unrestricted_File_Upload)
+    - [NIST Guidelines on Securing Public Web Servers](https://csrc.nist.gov/publications/detail/sp/800-44/version-2/final)
+    - [Docker Documentation: Use containers for isolation](https://docs.docker.com/get-started/overview/#use-containers-for-isolation)
+    - [Linux man page for chmod (file permissions)](https://linux.die.net/man/1/chmod)
+
+  cwe_id:
+    - 22
+  id: go_gosec_filesystem_dirtraversal
+  documentation_url: https://docs.bearer.com/reference/rules/go_gosec_filesystem_dirtraversal
+severity: high

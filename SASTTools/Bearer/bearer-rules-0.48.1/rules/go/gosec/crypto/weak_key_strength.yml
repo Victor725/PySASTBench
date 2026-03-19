@@ -1,0 +1,30 @@
+patterns:
+  - pattern: rsa.GenerateKey($<...>$<ARG>)
+    filters:
+      - variable: ARG
+        less_than: 2048
+languages:
+  - go
+metadata:
+  description: "Usage of inadequate encryption strength"
+  remediation_message: |-
+    ## Description
+
+    Your application uses RSA encryption with a key length shorter than the recommended 2048 bits. Keys under 2048 bits are vulnerable because of the increasing power of modern computers, which could break the encryption by factoring the key.
+
+    ## Remediations
+
+    - **Do** generate RSA keys with a minimum of 2048 bits. This meets NIST recommendations and protects against the risk of keys being compromised by advancements in computing power. Keys shorter than 2048 bits do not provide adequate protection against brute-force attacks.
+      ```go
+        privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+      ```
+    - **Do** adhere to industry standards and guidelines for cryptographic practices to ensure the security of your data.
+
+    ## References
+
+    - [NIST Special Publication 800-57 Part 1](https://csrc.nist.gov/publications/detail/sp/800-57-part-1/rev-5/final)
+  cwe_id:
+    - 327
+  id: go_gosec_crypto_weak_key_strength
+  documentation_url: https://docs.bearer.com/reference/rules/go_gosec_crypto_weak_key_strength
+severity: high

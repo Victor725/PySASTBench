@@ -1,0 +1,64 @@
+imports:
+  - ruby_shared_common_user_input
+patterns:
+  - pattern: |
+      RubyVM::InstructionSequence.compile($<USER_INPUT>$<...>)
+    filters:
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+  - pattern: |
+      $<_>.$<METHOD>($<USER_INPUT>$<...>)
+    filters:
+      - variable: METHOD
+        values:
+          - eval
+          - instance_eval
+          - class_eval
+          - module_eval
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+  - pattern: |
+      $<METHOD>($<USER_INPUT>$<...>)
+    filters:
+      - variable: METHOD
+        values:
+          - eval
+          - instance_eval
+          - class_eval
+          - module_eval
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+languages:
+  - ruby
+severity: critical
+metadata:
+  description: "Unsanitized user input in 'eval' type function"
+  remediation_message: |-
+    ## Description
+
+    Executing code with 'eval' or similar functions using unsanitized user input is risky and can lead to code injection vulnerabilities. This happens when external input is used directly in functions that execute code, allowing attackers to run malicious code within your application.
+
+    ## Remediations
+
+    - **Do not** use `eval` or similar code execution functions with unsanitized user input. This can create a significant security risk by allowing code injection.
+    - **Do** use dynamic hardcoded values instead of direct user input to mitigate the risk of code injection. This approach allows for controlled execution of code without exposing your application to injected malicious code.
+      ```ruby
+      get_total_str = if params["include_vat"]
+        "def get_total(a,b,c); a + b + c; end"
+      else
+        "def get_total(a,b); a + b; end"
+      end
+
+      cart.instance_eval(get_total_str)
+      ```
+
+    ## References
+
+    - [OWASP Code injection explained](https://owasp.org/www-community/attacks/Code_Injection)
+  cwe_id:
+    - 95
+  id: ruby_lang_eval_using_user_input
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_lang_eval_using_user_input

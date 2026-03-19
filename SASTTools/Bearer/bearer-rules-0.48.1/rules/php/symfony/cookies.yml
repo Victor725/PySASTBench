@@ -1,0 +1,40 @@
+imports:
+  - php_shared_lang_datatype
+patterns:
+  - pattern: |
+      $<CLASS>::create($<_>, $<DATA_TYPE>$<...>)
+    filters:
+      - variable: CLASS
+        regex: \A(\\?Symfony\\Component\\HttpFoundation\\)?Cookie\z
+      - variable: DATA_TYPE
+        detection: php_shared_lang_datatype
+        scope: result
+  - pattern: |
+      new $<CLASS>($<_>, $<DATA_TYPE>$<...>)
+    filters:
+      - variable: CLASS
+        regex: \A(\\?Symfony\\Component\\HttpFoundation\\)?Cookie\z
+      - variable: DATA_TYPE
+        detection: php_shared_lang_datatype
+        scope: result
+languages:
+  - php
+metadata:
+  description: "Leakage of sensitive data in cookie"
+  remediation_message: |-
+    ## Description
+
+    Leakage of sensitive data in cookies can lead to a data breach. This vulnerability occurs when sensitive information is stored in browser cookies, putting it at risk of unauthorized access.
+
+    ## Remediations
+
+    - **Do not** store sensitive data in unencrypted cookies. This practice can expose sensitive information to potential security threats.
+      ```php
+      $cookie = Cookie::create("user_email", $user->email); // unsafe
+      ```
+  cwe_id:
+    - 315
+  id: php_symfony_cookies
+  documentation_url: https://docs.bearer.com/reference/rules/php_symfony_cookies
+  cloud_code_suggestions: true
+severity: high

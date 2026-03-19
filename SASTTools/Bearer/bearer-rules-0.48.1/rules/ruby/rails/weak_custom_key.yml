@@ -1,0 +1,39 @@
+patterns:
+  - pattern: |
+      encrypts key: $<LENGTH>
+    filters:
+      - variable: LENGTH
+        length_less_than: 12
+languages:
+  - ruby
+metadata:
+  description: Usage of weak model specific encryption key
+  remediation_message: |-
+    ## Description
+
+    Weak model-specific encryption keys can compromise data security. To ensure effective encryption, model-specific encryption keys should be 12 bytes or greater.
+
+    ## Remediations
+
+    - **Do not** use model-specific encryption keys shorter than 12 bytes. Short keys are easier to crack, putting your data at risk.
+      ```ruby
+      class User < ApplicationRecord
+        encrypts :email, key: "weak-key" # unsafe
+      end
+      ```
+    - **Do** ensure your model-specific encryption keys are 12 bytes or longer to maintain strong encryption and protect sensitive data.
+      ```ruby
+      class User < ApplicationRecord
+        encrypts :email, key: "stronger-key-example"
+      end
+      ```
+
+    ## References
+
+    - [Rails encryption setup and recommended key practice](https://guides.rubyonrails.org/active_record_encryption.html#setup)
+    - [Rails encryption - model-specific keys](https://guides.rubyonrails.org/active_record_encryption.html#model-specific-keys)
+  cwe_id:
+    - 326
+  id: ruby_rails_weak_custom_key
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_rails_weak_custom_key
+severity: high

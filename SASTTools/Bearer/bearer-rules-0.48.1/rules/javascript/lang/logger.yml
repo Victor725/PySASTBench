@@ -1,0 +1,99 @@
+imports:
+  - javascript_shared_common_datatype
+patterns:
+  - pattern: |
+      $<LOG>.$<METHOD>($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: METHOD
+        values:
+          - warn
+          - info
+          - error
+          - fatal
+          - log
+      - variable: LOG
+        values:
+          - log
+          - logger
+      - variable: DATA_TYPE
+        detection: javascript_shared_common_datatype
+        scope: result
+  - pattern: |
+      console.$<METHOD>($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: METHOD
+        values:
+          - warn
+          - info
+          - error
+          - log
+          - table
+      - variable: DATA_TYPE
+        detection: javascript_shared_common_datatype
+        scope: result
+  - pattern: |
+      $<LOG>.child($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: LOG
+        values:
+          - log
+          - logger
+      - variable: DATA_TYPE
+        detection: javascript_shared_common_datatype
+        scope: result
+  - pattern: |
+      $<VAR>.$<METHOD>($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: VAR
+        detection: child_logger
+        scope: cursor
+      - variable: METHOD
+        values:
+          - warn
+          - info
+          - error
+          - fatal
+          - log
+      - variable: DATA_TYPE
+        detection: javascript_shared_common_datatype
+        scope: result
+auxiliary:
+  - id: child_logger
+    patterns:
+      - pattern: |
+          $<LOG>.child()
+        filters:
+          - variable: LOG
+            values:
+              - log
+              - logger
+languages:
+  - javascript
+skip_data_types:
+  - "Unique Identifier"
+metadata:
+  description: "Leakage of sensitive information in logger message"
+  remediation_message: |-
+    ## Description
+
+    Sensitive information leakage through logger messages can compromise user privacy and security. This vulnerability occurs when sensitive data, such as personal identifiable information (PII), is included in log messages, making it accessible to unauthorized individuals.
+
+    ## Remediations
+
+    - **Do not** include sensitive data in logger messages. This can lead to unintended exposure of private information.
+      ```javascript
+      logger.info(`User is: ${user.email}`) // unsafe
+      ```
+    - **Do** use non-sensitive, unique identifiers to reference users in log messages. This approach maintains user privacy while still allowing for effective logging.
+      ```javascript
+      logger.info(`User is: ${user.uuid}`)
+      ```
+    ## References
+
+    - [OWASP Logging Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html)
+  cwe_id:
+    - 532
+  id: "javascript_lang_logger"
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_lang_logger
+  cloud_code_suggestions: true
+severity: medium

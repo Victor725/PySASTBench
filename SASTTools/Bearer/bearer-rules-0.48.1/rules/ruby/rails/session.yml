@@ -1,0 +1,40 @@
+imports:
+  - ruby_shared_common_datatype
+patterns:
+  - pattern: |
+      session[$<_>] = $<DATA_TYPE>
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+languages:
+  - ruby
+skip_data_types:
+  - "Unique Identifier"
+metadata:
+  description: "Leakage of sensitive data in session cookie"
+  remediation_message: |-
+    ## Description
+
+    Storing sensitive data in session cookies poses a security risk. This vulnerability arises when sensitive information is included within session cookies, making it susceptible to unauthorized access.
+
+    ## Remediations
+
+    - **Do not** store sensitive data in session cookies. This approach risks exposing sensitive information since cookies are stored on the client side.
+      ```ruby
+      cookies[:user_credentials] = "username:password" # unsafe
+      ```
+    - **Do** configure your Rails application to use a database-based session storage. This method enhances security by storing session data on the server side, making it more secure and easier to manage session invalidation.
+      ```ruby
+      Rails.application.config.session_store :active_record_store
+      ```
+
+    ## References
+
+    - [Rails guide on configuring Rails applications](https://guides.rubyonrails.org/configuring.html)
+  cwe_id:
+    - 315
+  id: ruby_rails_session
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_rails_session
+  cloud_code_suggestions: true
+severity: high

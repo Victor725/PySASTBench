@@ -1,0 +1,47 @@
+patterns:
+  - pattern: |
+      ioutil.WriteFile($<...>$<MASK>)
+    filters:
+      - variable: MASK
+        detection: go_gosec_filesystem_poor_write_permissions_mask
+        scope: result
+auxiliary:
+  - id: go_gosec_filesystem_poor_write_permissions_mask
+    patterns:
+      - pattern: $<MASK>
+        filters:
+          - either:
+              - variable: MASK
+                regex: \A07
+              - variable: MASK
+                regex: \A0\d[1-7]
+              - variable: MASK
+                regex: \A0(o)?\d\d[1-7]
+languages:
+  - go
+metadata:
+  description: "Permissive file creation"
+  remediation_message: |-
+    ## Description
+
+    Your application sets file permissions that are overly permissive. This oversight could let unauthorized individuals read, write, or execute files, which could lead to the exposure of sensitive information or other security risks.
+
+    ## Remediations
+
+    - **Do** use restrictive file permissions. Assign file permissions that strictly limit access, aligning with what your application genuinely needs:
+      - `0400` for read-only access by the file's owner.
+      - `0200` for write-only access by the file's owner.
+      - `0600` for read and write access by the file's owner, suitable for files that the application needs to read from and write to.
+    - **Do** set the correct permissions when you create or modify files. This step is crucial to prevent unauthorized access right from the start.
+    - **Do** regularly review and audit file permissions in your system to ensure they adhere to the principle of least privilege, minimizing the access level to what is strictly necessary for operational functionality.
+
+    ## References
+
+    - [Go Documentation for os Package](https://pkg.go.dev/os)
+    - [Linux 'chmod' Command](https://linux.die.net/man/1/chmod)
+    - [OWASP File Handling Best Practices](https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html)
+  cwe_id:
+    - 732
+  id: go_gosec_filesystem_poor_write_permissions
+  documentation_url: https://docs.bearer.com/reference/rules/go_gosec_filesystem_poor_write_permissions
+severity: high

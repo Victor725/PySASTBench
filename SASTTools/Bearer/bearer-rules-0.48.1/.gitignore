@@ -1,0 +1,7 @@
+.DS_Store
+.idea/
+
+.envrc
+bearer
+node_modules/
+npm-debug.log*

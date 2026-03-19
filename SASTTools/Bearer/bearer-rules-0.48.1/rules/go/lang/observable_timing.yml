@@ -1,0 +1,33 @@
+patterns:
+  - pattern: |
+      $<KEY1> == $<KEY2>
+    filters:
+      - variable: KEY1
+        regex: /pass(word)?/
+      - variable: KEY2
+        regex: /pass(word)?/
+languages:
+  - go
+metadata:
+  description: "Observable Timing Discrepancy"
+  remediation_message: |-
+    ## Description
+
+    Observable Timing Discrepancy occurs when the time it takes for certain operations to complete can be measured and observed by attackers. This vulnerability is particularly concerning when operations involve sensitive information, such as password checks or secret comparisons. If attackers can analyze how long these operations take, they might be able to deduce confidential details, putting your data at risk.
+
+    ## Remediations
+
+    - **Do** implement algorithms that process sensitive information, such as password checks, to run in constant time. This approach helps in mitigating timing attacks by ensuring that operations take the same amount of time regardless of the input.
+    - **Do** use built-in cryptographic libraries that offer functions safe against timing attacks for comparing secret values. These libraries are designed to prevent timing discrepancies that could leak sensitive information.
+    - **Do not** use direct string comparisons for sensitive information. This method can result in early termination of the comparison function, leading to timing discrepancies based on the first mismatched character.
+    - **Do not** design application logic that alters execution paths in a manner that could introduce observable timing differences, particularly when processing user input or comparing secret values.
+
+    ## References
+
+    - [OWASP Guide to Cryptography](https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html)
+
+  cwe_id:
+    - 208
+  id: go_lang_observable_timing
+  documentation_url: https://docs.bearer.com/reference/rules/go_lang_observable_timing
+severity: medium

@@ -1,0 +1,41 @@
+imports:
+  - php_shared_lang_datatype
+patterns:
+  - pattern: |
+      JWT::encode($<DATA_TYPE>$<...>)
+    filters:
+      - variable: DATA_TYPE
+        detection: php_shared_lang_datatype
+        scope: result
+languages:
+  - php
+metadata:
+  description: "Leakage of sensitive data in JWT"
+  remediation_message: |-
+    ## Description
+
+    Storing sensitive data in JWTs exposes it to potential security risks. JWTs are designed for transmitting data securely, not for storing confidential information. Guard against including sensitive data in a JWT payload.
+
+    ## Remediations
+
+    - **Do not** include sensitive data such as email addresses or personal identifiable information in JWT payloads. This can lead to unauthorized access to sensitive information.
+      ```php
+      $payload = [
+        'data' => 'data',
+        'email' => $user->email
+      ];
+      $jwt = JWT::encode($payload, $key, 'HS256'); // unsafe
+      ```
+    - **Do** use non-sensitive, unique identifiers like a user's UUID in JWT payloads. This approach minimizes the risk of sensitive data exposure while still allowing user identification.
+      ```php
+      $payload = [
+        'data' => 'data',
+        'uuid' => $user->uuid
+      ];
+      $jwt = JWT::encode($payload, $key, 'HS256');
+      ```
+  cwe_id:
+    - 315
+  id: php_lang_jwt
+  documentation_url: https://docs.bearer.com/reference/rules/php_lang_jwt
+severity: high

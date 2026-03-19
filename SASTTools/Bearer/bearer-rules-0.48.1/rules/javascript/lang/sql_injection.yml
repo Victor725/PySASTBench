@@ -1,0 +1,182 @@
+imports:
+  - javascript_shared_common_external_input
+patterns:
+  - pattern: |
+      $<KNEX_CLIENT>.$<METHOD>($<...>$<USER_INPUT>$<...>)
+    filters:
+      - variable: USER_INPUT
+        detection: javascript_lang_sql_injection_user_input
+        scope: result
+      - variable: KNEX_CLIENT
+        detection: javascript_lang_sql_injection_knex_client
+      - variable: METHOD
+        values:
+          - fromRaw
+          - whereRaw
+          - raw
+  - pattern: |
+      $<PG_CLIENT>.query($<...>$<USER_INPUT>$<...>)
+    filters:
+      - variable: PG_CLIENT
+        detection: javascript_lang_sql_injection_pg_client
+        scope: cursor
+      - variable: USER_INPUT
+        detection: javascript_lang_sql_injection_user_input
+        scope: result
+  - pattern: |
+      $<_>.sequelize.query($<USER_INPUT>$<...>)
+    filters:
+      - variable: USER_INPUT
+        detection: javascript_lang_sql_injection_user_input
+        scope: result
+  - pattern: |
+      $<SEQUELIZE>.query($<USER_INPUT>$<...>)
+    filters:
+      - variable: USER_INPUT
+        detection: javascript_lang_sql_injection_user_input
+        scope: result
+      - variable: SEQUELIZE
+        detection: javascript_lang_sql_injection_sequelize_init
+        scope: cursor
+  - pattern: |
+      $<MYSQL_CONN>.$<METHOD>($<USER_INPUT>$<...>)
+    filters:
+      - variable: MYSQL_CONN
+        detection: javascript_lang_sql_injection_mysql_conn
+        scope: cursor
+      - variable: USER_INPUT
+        detection: javascript_lang_sql_injection_user_input
+        scope: result
+      - variable: METHOD
+        values:
+          - query
+          - execute
+  - pattern: |
+      $<MYSQL_POOL>.query($<...>$<USER_INPUT>$<...>)
+    filters:
+      - variable: MYSQL_POOL
+        detection: javascript_lang_sql_injection_mysql_pool
+        scope: cursor
+      - variable: USER_INPUT
+        detection: javascript_lang_sql_injection_user_input
+        scope: result
+  - pattern: |
+      $<CONN>.query($<USER_INPUT>, $<_>)
+    filters:
+      - variable: CONN
+        detection: javascript_lang_sql_injection_pool_conn
+        scope: cursor
+      - variable: USER_INPUT
+        detection: javascript_lang_sql_injection_user_input
+        scope: result
+  - pattern: |
+      $<SQLITE_3_DB>.$<METHOD>($<USER_INPUT>$<...>)
+    filters:
+      - variable: SQLITE_3_DB
+        detection: javascript_lang_sql_injection_sqlite3_init
+        scope: cursor
+      - variable: METHOD
+        values:
+          - all
+          - each
+          - exec
+          - get
+          - map
+          - prepare
+          - run
+      - variable: USER_INPUT
+        detection: javascript_lang_sql_injection_user_input
+        scope: result
+
+auxiliary:
+  - id: javascript_lang_sql_injection_user_input
+    sanitizer: javascript_lang_sql_injection_sanitizer
+    patterns:
+      - pattern: $<UNSANITIZED_INPUT>
+        filters:
+          - variable: UNSANITIZED_INPUT
+            detection: javascript_shared_common_external_input
+            scope: cursor
+  - id: javascript_lang_sql_injection_pg_client
+    patterns:
+      - new Client()
+  - id: javascript_lang_sql_injection_sequelize_init
+    patterns:
+      - new Sequelize()
+      - sequelize # fallback
+  - id: javascript_lang_sql_injection_sqlite3_init
+    patterns:
+      - new sqlite3.Database()
+  - id: javascript_lang_sql_injection_mysql_conn
+    patterns:
+      - mysql.createConnection()
+      - await mysql.createConnection()
+  - id: javascript_lang_sql_injection_mysql_pool
+    patterns:
+      - mysql.createPool()
+      - pattern: $<MYSQL_POOL>.promise()
+        filters:
+          - variable: MYSQL_POOL
+            detection: javascript_lang_sql_injection_mysql_pool
+  - id: javascript_lang_sql_injection_pool_conn
+    patterns:
+      - pattern: $<MYSQL_POOL>.getConnection(function($<_>, $<!>$<_>) {})
+        filters:
+          - variable: MYSQL_POOL
+            detection: javascript_lang_sql_injection_mysql_pool
+  - id: javascript_lang_sql_injection_knex_client
+    patterns:
+      - pattern: $<KNEX_CLIENT_INIT>
+        filters:
+          - variable: KNEX_CLIENT_INIT
+            values:
+              - knex
+              - knexClient
+              - client
+  - id: javascript_lang_sql_injection_sanitizer
+    patterns:
+      - pattern: $<_>.hash($<!>$<_>)
+      - |
+        { replacements: [$<...>$<!>$<_>$<...>] }
+languages:
+  - javascript
+severity: critical
+metadata:
+  description: Unsanitized input in SQL query
+  remediation_message: |-
+    ## Description
+
+    Using unsanitized data, such as user input or request data, or externally influenced data passed to a function, in SQL query exposes your application to SQL injection attacks. This vulnerability arises when externally controlled data is directly included in SQL statements without proper sanitation, allowing attackers to manipulate queries and access or modify data.
+
+    ## Remediations
+
+    - **Do not** use raw SQL queries that concatenate unsanitized input directly.
+      ```javascript
+      var sqlite = new Sequelize("sqlite::memory:");
+      sqlite.query("SELECT * FROM users WHERE ID = " + req.params.userId); // unsafe
+      ```
+    - **Do** validate all query inputs to ensure they meet expected patterns or values before using them in a query.
+      ```javascript
+      var rawId = req.params.userId
+      if !(/[0-9]+/.test(rawId)) {
+        // input is unexpected; don't make the query
+      }
+      ```
+    - **Do** use prepared (or parameterized) statements for querying databases to safely include external input.
+      ```javascript
+      var sqlite = new Sequelize("sqlite::memory:");
+      sqlite.query(
+        "SELECT * FROM users WHERE ID = ?",
+        { replacements: [req.params.userId] },
+        type: sequelize.QueryTypes.SELECT
+      )
+      ```
+
+    ## References
+
+    - [OWASP SQL injection explained](https://owasp.org/www-community/attacks/SQL_Injection)
+    - [OWASP SQL injection prevention cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html)
+  cwe_id:
+    - 89
+  id: javascript_lang_sql_injection
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_lang_sql_injection

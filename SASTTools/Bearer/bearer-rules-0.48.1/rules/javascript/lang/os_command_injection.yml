@@ -1,0 +1,47 @@
+imports:
+  - javascript_shared_common_user_input
+patterns:
+  - pattern: |
+      $<CHILD_PROCESS_PATTERN>($<...>$<USER_INPUT>$<...>)
+    filters:
+      - variable: CHILD_PROCESS_PATTERN
+        values:
+          - exec
+          - execSync
+          - spawn
+          - spawnSync
+      - variable: USER_INPUT
+        detection: javascript_shared_common_user_input
+        scope: result
+languages:
+  - javascript
+severity: critical
+metadata:
+  description: "Unsanitized user input in OS command"
+  remediation_message: |-
+    ## Description
+
+    Executing operating system commands with unsanitized user input can lead to command injection vulnerabilities. This occurs when attackers manipulate the input to execute unauthorized commands, potentially gaining control over the system.
+
+    ## Remediations
+
+    - **Do not** directly use user input in OS command execution. This can open up the system to command injection attacks.
+    - **Do** use static or predefined values for command parameters when possible. This reduces the risk of injection and ensures that the command operates within expected parameters.
+      ```javascript
+      let filePattern = "*.js"
+
+      if (req.params.graphql) {
+        filePattern = "*.gql"
+      }
+
+      cp.exec(`cp ${filePattern} foo`, (error, stdout, stderr) => {});
+      ```
+    - **Do** validate and sanitize all user input used in OS commands. Ensure that the input does not contain malicious characters or command sequences.
+
+    ## References
+
+    - [OWASP command injection explained](https://owasp.org/www-community/attacks/Command_Injection)
+  cwe_id:
+    - 78
+  id: "javascript_lang_os_command_injection"
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_lang_os_command_injection

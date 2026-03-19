@@ -1,0 +1,69 @@
+imports:
+  - java_shared_lang_instance
+sanitizer: java_lang_file_upload_filename_sanitized_name
+patterns:
+  - pattern: |
+      $<UPLOADED_FILE>.getName()
+    filters:
+      - variable: UPLOADED_FILE
+        detection: java_lang_file_upload_filename_uploaded_servlet_file
+        scope: result
+auxiliary:
+  - id: java_lang_file_upload_filename_sanitized_name
+    patterns:
+      - pattern: FilenameUtils.getName($<!>$<_>)
+  - id: java_lang_file_upload_filename_uploaded_servlet_file
+    patterns:
+      - pattern: |
+          for (FileItem $<FILE_ITEM> : $<UPLOADED_FILES>) {}
+        focus: FILE_ITEM
+        filters:
+          - variable: UPLOADED_FILES
+            detection: java_lang_file_upload_filename_uploaded_servlet_files
+  - id: java_lang_file_upload_filename_uploaded_servlet_files
+    patterns:
+      - pattern: $<SERVLET>.parseRequest($<SERVLET_REQ>);
+        filters:
+          - variable: SERVLET
+            detection: java_shared_lang_instance
+            scope: cursor
+            filters:
+              - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+                regex: \A(org\.apache\.commons\.fileupload\.servlet)?ServletFileUpload\z
+          - variable: SERVLET_REQ
+            detection: java_shared_lang_instance
+            scope: cursor
+            filters:
+              - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+                regex: \A(java\.servlet\.http\.)?HttpServletRequest\z
+languages:
+  - java
+metadata:
+  description: Unsanitized use of FileUpload filename
+  remediation_message: |-
+    ## Description
+
+    Using the filename from FileUpload without sanitization can lead to path traversal attacks. This vulnerability occurs when an attacker manipulates the filename to access files or directories that are outside of the intended directory.
+
+    ## Remediations
+
+    - **Do not** use unsanitized filenames from FileUpload directly. Attackers can exploit these filenames to navigate the server's directory structure.
+    - **Do** sanitize user input when handling file paths. Use methods like `FilenameUtils.getName()` to ensure the path is safe and cannot be manipulated to traverse directories.
+      ```java
+      ServletFileUpload upload = new ServletFileUpload();
+      List<FileItem> fileItems = upload.parseRequest(request);
+
+      for (FileItem item : fileItems) {
+        String filename = FilenameUtils.getName(item.getName());
+        // ...
+      }
+      ```
+
+    ## References
+
+    - [OWASP path traversal](https://owasp.org/www-community/attacks/Path_Traversal)
+  cwe_id:
+    - 73
+  id: java_lang_file_upload_filename
+  documentation_url: https://docs.bearer.com/reference/rules/java_lang_file_upload_filename
+severity: high

@@ -1,0 +1,32 @@
+patterns:
+  - pattern: $<CIPHER>.getInstance($<RSA_NO_PADDING>)
+    filters:
+      - variable: CIPHER
+        regex: \A(javax\.crypto\.)?Cipher\z
+      - variable: RSA_NO_PADDING
+        string_regex: \ARSA\/.*\/NoPadding\z
+languages:
+  - java
+metadata:
+  description: "Missing Optimal Asymmetric Encryption Padding (OAEP)"
+  remediation_message: |-
+    ## Description
+
+    The RSA encryption algorithm becomes vulnerable without Optimal Asymmetric Encryption Padding (OAEP). This vulnerability can lead to security risks such as information disclosure.
+
+    ## Remediations
+
+    - **Do** always use OAEP with RSA encryption to enhance security and mitigate vulnerabilities.
+      ```java
+      Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithMD5AndMGF1Padding")
+      ```
+
+    ## References
+
+    - [Java MessageDigest class](https://docs.oracle.com/javase/8/docs/api/java/security/MessageDigest.html)
+  cwe_id:
+    - 780
+  id: "java_lang_rsa_no_padding"
+  documentation_url: https://docs.bearer.com/reference/rules/java_lang_rsa_no_padding
+  cloud_code_suggestions: true
+severity: medium

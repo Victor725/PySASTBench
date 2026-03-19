@@ -1,0 +1,45 @@
+languages:
+  - python
+imports:
+  - python_shared_common_user_input
+  - python_shared_common_http_location
+patterns:
+  - pattern: $<USER_INPUT_LOCATION>
+    filters:
+      - variable: USER_INPUT_LOCATION
+        detection: python_shared_common_http_location
+        scope: cursor_strict
+        filters:
+          - variable: LOCATION
+            detection: python_shared_common_user_input
+            scope: result
+severity: high
+metadata:
+  description: "Unsanitized user input in HTTP request (SSRF)"
+  remediation_message: |-
+    ## Description
+
+    Your application is vulnerable to Server-Side Request Forgery (SSRF) attacks when it connects to URLs that include user-supplied data. This vulnerability occurs because attackers can manipulate these URLs to force your application to make unintended requests to internal or external resources.
+
+    ## Remediations
+
+    - **Do not** directly include user input in HTTP URLs. This practice can lead to SSRF vulnerabilities, where attackers exploit the application to send requests to unintended destinations.
+      ```python
+      host = request.GET["host"]
+      
+      urllib.request.urlopen(f"https://{host}") # unsafe
+      ```
+    - **Do** validate or map user input against a predefined list of safe values before using it to form URLs. This approach ensures that the application only connects to intended and safe locations.
+      ```python
+      host = "api1.com" if request.GET["host"] == "option1" else "api2.com"
+      
+      urllib.request.urlopen(f"https://{host}")
+      ```
+
+    ## References
+
+    - [OWASP - Server-Side Request Forgery (SSRF) prevention cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html)
+  cwe_id:
+    - 918
+  id: python_lang_http_url_using_user_input
+  documentation_url: https://docs.bearer.com/reference/rules/python_lang_http_url_using_user_input

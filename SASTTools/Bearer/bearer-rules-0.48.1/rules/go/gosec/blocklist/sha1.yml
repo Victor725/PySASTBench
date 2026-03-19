@@ -1,0 +1,32 @@
+patterns:
+  - pattern: |
+      import $<!>"crypto/sha1"
+  - pattern: |
+      import (
+        $<!>"crypto/sha1"
+      )
+languages:
+  - go
+metadata:
+  description: "Import of weak hashing library (SHA-1)"
+  remediation_message: |-
+    ## Description
+
+    The SHA-1 hashing algorithm is outdated and vulnerable to collision attacks, where two distinct inputs produce the same output hash. This flaw compromises the algorithm's ability to securely verify data integrity and authenticity, making it unsuitable for cryptographic security.
+
+    ## Remediations
+
+    - **Do not** use SHA-1 for cryptographic purposes or to ensure data integrity. Its susceptibility to collision attacks poses a significant security risk.
+    - **Do** use stronger hashing algorithms such as SHA-3 or BLAKE2 for general hashing purposes, such as file integrity checks or generating unique identifiers.
+    - **Do** use recommended algorithms such as bcrypt or Argon2id for password hashing, as these are designed to be slower and therefore more effective against brute-force attacks.
+
+    ## References
+
+    - [OWASP Cryptographic Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html)
+    - [NIST Policy on Hash Functions](https://csrc.nist.gov/projects/hash-functions)
+
+  cwe_id:
+    - 328
+  id: go_gosec_blocklist_sha1
+  documentation_url: https://docs.bearer.com/reference/rules/go_gosec_blocklist_sha1
+severity: medium

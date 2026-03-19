@@ -1,0 +1,42 @@
+patterns:
+  - pattern: |
+      $<JWTS>.parse();
+    filters:
+      - variable: JWTS
+        detection: java_lang_jwt_verification_bypass_jwts
+auxiliary:
+  - id: java_lang_jwt_verification_bypass_jwts
+    patterns:
+      - pattern: $<JWTS>;
+        filters:
+          - variable: JWTS
+            regex: \A(io\.jsonwebtoken\.)?Jwts\z
+languages:
+  - java
+severity: critical
+metadata:
+  description: Missing signature verification of JWT
+  remediation_message: |-
+    ## Description
+
+    Failing to verify the signature of JSON Web Tokens (JWTs) compromises the security of an application. Signature verification is crucial for confirming the authenticity and integrity of JWTs. Without this verification, your application is open to token forgery and replay attacks, where attackers can manipulate or reuse tokens to gain unauthorized access.
+
+    ## Remediations
+
+    - **Do not** use the `parse()` method for handling JWTs, as it does not verify the token's signature, leaving a significant security gap.
+      ```java
+      Jwts.parser().setSigningKey(JWT_PASSWORD).parse(accessToken); // unsafe
+      ```
+    - **Do** use the `parseClaimsJws()` method when working with JWTs. This method ensures that the signature is verified, safeguarding against the manipulation of token data.
+      ```java
+      Jwts.parser().setSigningKey(JWT_PASSWORD).parseClaimsJws(accessToken);
+      ```
+
+    ## References
+
+    - [JWT for Java Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_for_Java_Cheat_Sheet.html)
+
+  cwe_id:
+    - 347
+  id: java_lang_jwt_verification_bypass
+  documentation_url: https://docs.bearer.com/reference/rules/java_lang_jwt_verification_bypass

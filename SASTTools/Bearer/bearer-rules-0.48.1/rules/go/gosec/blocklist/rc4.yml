@@ -1,0 +1,29 @@
+patterns:
+  - pattern: |
+      import $<!>"crypto/rc4"
+  - pattern: |
+      import (
+        $<!>"crypto/rc4"
+      )
+languages:
+  - go
+metadata:
+  description: "Import of weak encryption algorithm (RCA)"
+  remediation_message: |-
+    ## Description
+
+    The RC4 encryption algorithm is outdated and vulnerable. It has been found to have significant security flaws, including predictable key generation and weak randomization, which have been exploited in various attacks. These vulnerabilities make RC4 unsuitable for secure data encryption.
+
+    ## Remediations
+
+    - **Do not** use RC4 for encrypting data. Its vulnerabilities to cryptanalysis and practical attacks compromise data security.
+    - **Do** switch to AES-256 for encryption. AES-256 is a secure and widely accepted standard that provides strong protection against attacks. Using AES-256 ensures compliance with current security standards and provides a robust defense against known cryptographic attacks.
+
+    ## References
+
+    - [NIST Guidelines on Cryptography](https://csrc.nist.gov/publications/detail/sp/800-38a/final)
+  cwe_id:
+    - 327
+  id: go_gosec_blocklist_rc4
+  documentation_url: https://docs.bearer.com/reference/rules/go_gosec_blocklist_rc4
+severity: high

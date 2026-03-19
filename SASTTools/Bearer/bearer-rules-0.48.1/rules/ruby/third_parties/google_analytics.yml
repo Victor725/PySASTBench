@@ -1,0 +1,47 @@
+imports:
+  - ruby_shared_common_datatype
+patterns:
+  - pattern: |
+      Google::Apis::AnalyticsreportingV4::$<CLASS_NAME>.$<METHOD_NAME>($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+      - variable: CLASS_NAME
+        values:
+          - Cohort
+          - CustomDimension
+          - EventData
+          - GoalData
+          - ProductData
+          - TransactionData
+          - User
+          - UserActivitySession
+      - variable: METHOD_NAME
+        values:
+          - new
+          - update!
+languages:
+  - ruby
+skip_data_types:
+  - Unique Identifier
+metadata:
+  description: "Leakage of sensitive data to Google Analytics"
+  remediation_message: |
+    ## Description
+
+    Leaking sensitive data to third-party analytics tools like Google Analytics is a common cause of data leaks and can lead to data breaches.
+
+    ## Remediations
+
+    - **Do** ensure all sensitive data is removed when sending data to analytics libraries like Google Analytics.
+
+     ## References
+    - [Google Analytics docs](https://developers.google.com/analytics/devguides/reporting/)
+  cwe_id:
+    - 201
+  associated_recipe: Google Analytics
+  id: ruby_third_parties_google_analytics
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_third_parties_google_analytics
+  cloud_code_suggestions: true
+severity: medium

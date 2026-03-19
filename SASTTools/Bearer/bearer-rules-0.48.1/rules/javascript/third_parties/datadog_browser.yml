@@ -1,0 +1,32 @@
+patterns:
+  - pattern: |
+      DD_RUM.init({
+          $<!>trackUserInteractions: true,
+        })
+  - pattern: |
+      window.DD_RUM.init({
+        $<!>trackUserInteractions: true,
+      })
+languages:
+  - javascript
+metadata:
+  description: "Leakage of sensitive data to Datadog RUM"
+  remediation_message: |
+    ## Description
+
+    Sensitive and private data contained in your pages may be sent to Datadog to identify elements that a user interacted with.
+
+    ## Remediations
+
+    - **Do** control which information is sent to Datadog by either manually setting an action name or implementing a global scrubbing rule in the Datadog Browser SDK for RUM.
+
+    ## Resources
+    - [Datadog docs](https://docs.datadoghq.com)
+    - [Scrubbing data](https://docs.datadoghq.com/real_user_monitoring/browser/modifying_data_and_context/?tab=npm)
+  cwe_id:
+    - 201
+  associated_recipe: Datadog
+  id: javascript_third_parties_datadog_browser
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_third_parties_datadog_browser
+  cloud_code_suggestions: true
+severity: medium

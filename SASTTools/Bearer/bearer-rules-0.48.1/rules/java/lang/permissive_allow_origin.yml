@@ -1,0 +1,48 @@
+imports:
+  - java_shared_lang_instance
+patterns:
+  - pattern: |
+      $<RES>.$<METHOD>($<HEADER>, $<VALUE>);
+    filters:
+      - variable: RES
+        detection: java_shared_lang_instance
+        scope: cursor
+        filters:
+          - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+            regex: \A(javax\.servlet\.http\.)?HttpServletResponse\z
+      - variable: METHOD
+        values:
+          - setHeader
+          - addHeader
+      - variable: HEADER
+        string_regex: \A(?i)(Access-Control-Allow-Origin)\z
+      - variable: VALUE
+        string_regex: \A\*\z
+languages:
+  - java
+metadata:
+  description: "Permissive Access-Control-Allow-Origin configuration"
+  remediation_message: |-
+    ## Description
+
+    A permissive Access-Control-Allow-Origin configuration can expose your application to security risks. When this header is set to "*", it means your application's responses can be accessed by any website, potentially leading to unauthorized access to sensitive information.
+
+    ## Remediations
+
+    - **Do not** set the Access-Control-Allow-Origin header to "*". This overly permissive setting can make your application vulnerable to attacks.
+      ```java
+        response.addHeader("access-control-allow-origin", "*"); // unsafe
+      ```
+    - **Do** restrict the Access-Control-Allow-Origin header to only allow specific, trusted origins that need access to your application. This minimizes the risk of sensitive data exposure.
+      ```java
+      response.addHeader("access-control-allow-origin", "myapp.example.com");
+      ```
+
+    ## References
+
+    - [OWASP Origin & Access-Control-Allow-Origin](https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/11-Client-side_Testing/07-Testing_Cross_Origin_Resource_Sharing)
+  cwe_id:
+    - 942
+  id: java_lang_permissive_allow_origin
+  documentation_url: https://docs.bearer.com/reference/rules/java_lang_permissive_allow_origin
+severity: medium

@@ -1,0 +1,85 @@
+imports:
+  - java_shared_lang_html_user_input
+  - java_shared_lang_instance
+patterns:
+  - pattern: |
+      $<WRITER>.$<METHOD>($<...>$<USER_INPUT>$<...>)
+    filters:
+      - variable: WRITER
+        detection: java_lang_xss_response_writer_writer
+        scope: cursor
+      - variable: METHOD
+        values:
+          - append
+          - format
+          - print
+          - printf
+          - println
+          - write
+      - variable: USER_INPUT
+        detection: java_shared_lang_html_user_input
+        scope: result
+  - pattern: |
+      $<WRITER>.$<METHOD>($<...>$<USER_INPUT>$<...>)
+    filters:
+      - variable: WRITER
+        detection: java_lang_xss_response_writer_writer_fallback
+        scope: cursor
+      - variable: METHOD
+        values:
+          - append
+          - format
+          - print
+          - printf
+          - println
+          - write
+      - variable: USER_INPUT
+        detection: java_shared_lang_html_user_input
+        scope: result
+auxiliary:
+  - id: java_lang_xss_response_writer_writer
+    patterns:
+      - pattern: $<RESPONSE_INSTANCE>.getWriter();
+        filters:
+          - variable: RESPONSE_INSTANCE
+            detection: java_shared_lang_instance
+            scope: cursor
+            filters:
+              - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+                regex: \A(javax\.servlet\.http\.)?HttpServletResponse\z
+  - id: java_lang_xss_response_writer_writer_fallback
+    patterns:
+      - pattern: response.getWriter();
+languages:
+  - java
+metadata:
+  description: "Unsanitized user input in output stream (XSS)"
+  remediation_message: |-
+    ## Description
+
+    Cross-site scripting (XSS) vulnerabilities occur when unsanitized user input is included in web page content. This flaw can lead to malicious scripts being executed in the context of the user's browser, compromising the security of user data and interactions with the application.
+
+    ## Remediations
+
+    - **Do** use an encoder to handle user input before incorporating it into the output stream. This step helps minimize the risk of XSS attacks by converting potentially dangerous characters into a safe format.
+      ```java
+      String userInput = req.getQueryString("user");
+      String encodedUserInput = Encode.forHtml(userInput);
+      response.getWriter().write(encodedUserInput);
+      ```
+    - **Do** sanitize user input to remove or neutralize unwanted scripts. Sanitization goes beyond encoding by actively removing harmful content from user input before it is used in the output.
+      ```java
+      String userInput = req.getQueryString("user");
+      String sanitizedUserInput = sanitize(userInput);
+      response.getWriter().write(sanitizedUserInput);
+      ```
+
+    ## References
+
+    - [OWASP XSS Prevention Cheatsheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)
+    - [OWASP Java Encoder](https://owasp.org/www-project-java-encoder/)
+  cwe_id:
+    - 79
+  id: "java_lang_xss_response_writer"
+  documentation_url: https://docs.bearer.com/reference/rules/java_lang_xss_response_writer
+severity: high

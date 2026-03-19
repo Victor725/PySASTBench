@@ -1,0 +1,111 @@
+imports:
+  - java_shared_lang_instance
+  - java_shared_lang_external_input
+patterns:
+  - pattern: new $<CLASS>($<INPUT>$<...>);
+    filters:
+      - variable: CLASS
+        regex: \A(org\.springframework\.jdbc\.core\.)?PreparedStatementCreatorFactory\z
+      - variable: INPUT
+        detection: java_shared_lang_external_input
+        scope: result
+  - pattern: $<FACTORY>.newPreparedStatementCreator($<INPUT>$<...>);
+    filters:
+      - variable: FACTORY
+        detection: java_shared_lang_instance
+        scope: cursor
+        filters:
+          - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+            regex: \A(org\.springframework\.jdbc\.core\.)?PreparedStatementCreatorFactory\z
+      - variable: INPUT
+        detection: java_shared_lang_external_input
+        scope: result
+  - pattern: $<JDBC_TEMPLATE>.batchUpdate($<...>$<INPUT>$<...>);
+    filters:
+      - variable: JDBC_TEMPLATE
+        detection: java_spring_sqli_jdbc_template
+        scope: cursor
+      - variable: INPUT
+        detection: java_shared_lang_external_input
+        scope: result
+  - pattern: $<JDBC_TEMPLATE>.$<METHOD>($<INPUT>$<...>);
+    filters:
+      - variable: JDBC_TEMPLATE
+        detection: java_spring_sqli_jdbc_template
+        scope: cursor
+      - variable: METHOD
+        values:
+          - execute
+          - query
+          - queryForList
+          - queryForMap
+          - queryForObject
+          - queryForRowSet
+          - queryForInt
+          - queryForLong
+          - queryForStream
+          - update
+      - variable: INPUT
+        detection: java_shared_lang_external_input
+        scope: result
+auxiliary:
+  - id: java_spring_sqli_jdbc_template
+    patterns:
+      - pattern: $<JDBC_TEMPLATE_INSTANCE>;
+        filters:
+          - variable: JDBC_TEMPLATE_INSTANCE
+            detection: java_shared_lang_instance
+            scope: cursor
+            filters:
+              - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+                regex: \A(org\.springframework\.jdbc\.core\.)?JdbcTemplate\z
+      # fallback
+      - pattern: $<FALLBACK>;
+        filters:
+          - variable: FALLBACK
+            regex: (?i)(\A|\.)jdbctemplate\z
+languages:
+  - java
+trigger:
+  match_on: presence
+metadata:
+  description: "Unsanitized external input in SQL query"
+  remediation_message: |-
+    ## Description
+
+    Using unsanitized data, such as user input or request data, or externally influenced data passed to a function, in SQL query exposes your application to SQL injection attacks. This vulnerability arises when externally controlled data is directly included in SQL statements without proper sanitation, allowing attackers to manipulate queries and access or modify data.
+
+    ## Remediations
+
+    - **Do not** concatenate external input directly into SQL queries. This practice can lead to SQL injection vulnerabilities.
+      ```java
+      String query = "update user set name='"+uri.getQueryParameter("name")+"' where id='"+uri.getQueryParameter("userId")+"'";
+      return jdbcTemplate.update(query);
+      ```
+    - **Do** use `PreparedStatement` with parameterized SQL queries to safely include external input. This method ensures that input is treated as data, not executable code.
+      ```java
+      new PreparedStatementCreator() {
+        public PreparedStatement createPreparedStatement(Connection conn) throws SQLException {
+          String updateString = "update user set name = ? where id = ?";
+          return conn.prepareStatement(updateString);
+        }
+      }
+
+      new PreparedStatementSetter() {
+        public void setValues(PreparedStatement preparedStatement) throws SQLException {
+          preparedStatement.setString(1, uri.getQueryParameter("name"));
+          preparedStatement.setInt(2, uri.getQueryParameter("userId"));
+        }
+      }
+      ```
+
+    ## References
+
+    - [JDBC Template class](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/jdbc/core/JdbcTemplate.html)
+    - [OWASP SQL injection explained](https://owasp.org/www-community/attacks/SQL_Injection)
+    - [OWASP SQL injection prevention cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html)
+  cwe_id:
+    - 89
+  id: "java_spring_sqli"
+  documentation_url: https://docs.bearer.com/reference/rules/java_spring_sqli
+severity: critical

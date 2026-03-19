@@ -1,0 +1,65 @@
+imports:
+  - ruby_shared_common_user_input
+patterns:
+  - pattern: |
+      Net::FTP.new($<...>$<USER_INPUT>$<...>)
+    filters:
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+  - pattern: |
+      Net::FTP.open($<...>$<USER_INPUT>$<...>)$<...>
+    filters:
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+  - pattern: |
+      $<FTP>.$<_>($<...>$<USER_INPUT>$<...>)$<...>
+    filters:
+      - variable: FTP
+        detection: ruby_lang_ftp_using_user_input_ftp
+        scope: cursor
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+auxiliary:
+  - id: ruby_lang_ftp_using_user_input_ftp
+    patterns:
+      - Net::FTP.new()
+      - Net::FTP.open()
+      - Net::FTP.open() { |$<!>$<_:identifier>| }
+languages:
+  - ruby
+severity: high
+metadata:
+  description: "Unsanitized user input in FTP request"
+  remediation_message: |-
+    ## Description
+
+    Using unsanitized user input in FTP requests can lead to severe security vulnerabilities. When your application uses raw user input in FTP operations without proper sanitization, it opens up avenues for attackers. They could exploit this to perform code injection attacks, where malicious code is executed by the application, or path traversal attacks, which allow unauthorized access to files and directories outside of the intended scope.
+
+    ## Remediations
+
+    - **Do not** use unsanitized user input to form filenames or file paths in FTP operations. Always sanitize input to prevent malicious data from being processed.
+      ```ruby
+      Net::FTP.open("public/#{params["resource_name"]}.txt") do # unsafe
+        # ...
+      end
+      ```
+    - **Do not** pass unsanitized user input as arguments to FTP methods. Ensure input is validated or sanitized before use.
+      ```ruby
+      Net::FTP.open("example.txt", username: params[:user]) do # unsafe
+        # ...
+      end
+      ```
+    - **Do** use a safelist for filenames and paths, allowing only known patterns.
+    - **Do** implement strict input validation checks, such as length, format, and type, to ensure only expected data is processed.
+
+    ## References
+
+    - [OWASP code injection](https://owasp.org/www-community/attacks/Code_Injection)
+    - [OWASP path traversal](https://owasp.org/www-community/attacks/Path_Traversal)
+  cwe_id:
+    - 73
+  id: ruby_lang_ftp_using_user_input
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_lang_ftp_using_user_input

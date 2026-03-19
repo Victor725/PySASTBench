@@ -1,0 +1,37 @@
+imports:
+  - go_shared_lang_dynamic_input_combined
+patterns:
+  - pattern: $<DECODER>.Decode($<...>);
+    filters:
+      - variable: DECODER
+        detection: go_lang_deserialization_of_user_input_decoder
+auxiliary:
+  - id: go_lang_deserialization_of_user_input_decoder
+    patterns:
+      - pattern: gob.NewDecoder($<USER_INPUT>);
+        filters:
+          - variable: USER_INPUT
+            detection: go_shared_lang_dynamic_input_combined
+languages:
+  - go
+metadata:
+  description: Unsanitized user input in deserialization method
+  remediation_message: |-
+    ## Description
+
+    Deserializing data from untrusted sources, like user inputs or request parameters, without proper verification is a security risk. Attackers can embed malicious code or payloads within serialized data. When your application deserializes this data without checks, it becomes vulnerable to attacks.
+
+    ## Remediations
+
+    - **Do not** deserialize data from untrusted sources directly. This can lead to security vulnerabilities.
+    - **Do** validate and sanitize all data before deserializing it. Ensure that the data is coming from a trusted source and is in the expected format.
+
+    ## References
+
+    - [Gob Security Documentation](https://pkg.go.dev/encoding/gob#hdr-Security)
+    - [OWASP Deserialization cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html)
+  cwe_id:
+    - 502
+  id: go_lang_deserialization_of_user_input
+  documentation_url: https://docs.bearer.com/reference/rules/go_lang_deserialization_of_user_input
+severity: critical

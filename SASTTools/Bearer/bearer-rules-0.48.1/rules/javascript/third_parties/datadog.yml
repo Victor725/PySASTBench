@@ -1,0 +1,60 @@
+imports:
+  - javascript_shared_common_datatype
+patterns:
+  - pattern: |
+      $<CLIENT>.$<METHOD>($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: CLIENT
+        detection: javascript_third_parties_hotshot_statsd
+        scope: cursor
+      - variable: METHOD
+        values:
+          - event
+          - increment
+          - historgram
+          - set
+      - variable: DATA_TYPE
+        detection: javascript_shared_common_datatype
+        scope: result
+languages:
+  - javascript
+auxiliary:
+  - id: javascript_third_parties_hotshot_statsd
+    patterns:
+      - |
+        new StatsD($<...>)
+skip_data_types:
+  - "Unique Identifier"
+metadata:
+  description: "Leakage of sensitive data to Datadog"
+  remediation_message: |
+    ## Description
+
+    Leaking sensitive data to third-party loggers like Datadog is a common cause of data leaks and can lead to data breaches.
+
+    ## Remediations
+
+    - **Do** ensure all sensitive data is removed when sending data to third-party loggers like Datadog.
+    - **Do** use unique identifiers from the database if you really need to identify users.
+      ```javascript
+        const StatsD = require("hot-shots");
+        const client = new StatsD({
+          port: 8020,
+          globalTags: { env: process.env.NODE_ENV },
+          errorHandler: errorHandler,
+        });
+
+        client.event(user.uuid, "logged_in", {});
+      ```
+
+    ## References
+    - [Datadog docs](https://docs.datadoghq.com)
+    - [Scrubbing data](https://docs.datadoghq.com/tracing/configure_data_security/?tab=mongodb#scrub-sensitive-data-from-your-spans)
+    - [OWASP logging cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html)
+  cwe_id:
+    - 201
+  associated_recipe: Datadog
+  id: javascript_third_parties_datadog
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_third_parties_datadog
+  cloud_code_suggestions: true
+severity: medium

@@ -1,0 +1,60 @@
+patterns:
+  - pattern: config.consider_all_requests_local = true
+    filters:
+      - not:
+          filename_regex: (\A|/)(development|test)\.rb\z
+  - pattern: |
+      class $<NAME> < $<_>
+        $<!>$<METHOD>
+      end
+    filters:
+      - variable: NAME
+        regex: Controller\z
+      - variable: METHOD
+        detection: show_detailed_exceptions_method
+        scope: cursor
+      - not:
+          variable: METHOD
+          detection: show_detailed_exceptions_method_false
+          scope: cursor
+auxiliary:
+  - id: show_detailed_exceptions_method
+    patterns:
+      - |
+        def show_detailed_exceptions?
+        end
+  - id: show_detailed_exceptions_method_false
+    patterns:
+      - |
+        def show_detailed_exceptions?
+          false
+        end
+languages:
+  - ruby
+severity: low
+metadata:
+  description: "Leakage of sensitive information in exception message"
+  remediation_message: |-
+    ## Description
+
+    Leakage of sensitive information in exception messages poses a significant security risk. When an exception message is printed to the default output, it might reveal sensitive details about your application's technical setup or environment. This could potentially open the door to attacks, such as path traversal. Even more concerning is the possibility of exposing user-specific data, which could lead to serious privacy breaches.
+
+    ## Remediations
+
+    - **Do not** configure your application to display detailed error messages for all errors.
+      ```ruby
+      config.consider_all_requests_local = false # unsafe
+      ```
+    - **Do not** implement `show_detailed_exceptions?` in controllers to return detailed errors.
+      ```ruby
+      class MyController < ApplicationController
+        def show_detailed_exceptions? # unsafe
+          ...
+        end
+      end
+      ```
+  cwe_id:
+    - 209
+  id: ruby_rails_detailed_exceptions
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_rails_detailed_exceptions
+  cloud_code_suggestions: true

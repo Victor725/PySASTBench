@@ -1,0 +1,69 @@
+patterns:
+  - pattern: |
+      io.$<METHOD>($<...>$<READER>$<...>)
+    filters:
+      - variable: METHOD
+        values:
+          - Copy
+          - CopyBuffer
+      - either:
+          - variable: READER
+            detection: go_gosec_filesystem_decompression_bomb_reader
+            scope: result
+          - variable: READER
+            detection: go_gosec_filesystem_decompression_bomb_reader_file_open
+            scope: result
+auxiliary:
+  - id: go_gosec_filesystem_decompression_bomb_reader_file_open
+    patterns:
+      - pattern: $<FILE>.Open()
+        filters:
+          - variable: FILE
+            detection: go_gosec_filesystem_decompression_bomb_reader_file
+            scope: result
+  - id: go_gosec_filesystem_decompression_bomb_reader_file
+    patterns:
+      - pattern: $<READER>.File
+        filters:
+          - variable: READER
+            detection: go_gosec_filesystem_decompression_bomb_reader
+            scope: result
+  - id: go_gosec_filesystem_decompression_bomb_reader
+    patterns:
+      - gzip.NewReader()
+      - zlib.NewReader()
+      - bzip2.NewReader()
+      - flate.NewReader()
+      - lzw.Reader()
+      - tar.NewReader()
+      - zip.NewReader()
+      - zlib.NewReaderDict()
+      - flate.NewReaderDict()
+      - zip.OpenReader()
+languages:
+  - go
+metadata:
+  description: "Missing configuration against decompression bomb"
+  remediation_message: |-
+    ## Description
+
+    Decompression bombs pose a risk by exploiting applications that process compressed files. These attacks involve a compressed file that is small in size but expands to a significantly larger size when decompressed. This can overwhelm system resources such as CPU, memory, or disk space, causing a Denial of Service (DoS).
+
+    ## Remediations
+
+    - **Do** limit the decompression size. Use `io.LimitReader`, for example, to restrict the amount of data that a reader will decompress. This prevents the decompression of large files that could fill up memory or disk space.
+      ```go
+      const maxDecompressSize = 10 * 1024 * 1024 // 10 MB
+      limitedReader := io.LimitReader(r, maxDecompressSize)
+      ```
+    - **Do** monitor resource usage to detect unexpected increases in CPU, memory, or disk usage, which may indicate an attack.
+    - **Do** validate the size and type of input files before decompression. Reject files that do not meet predefined criteria to avoid processing potentially harmful data.
+    - **Do** ensure your application fails safely. It should handle decompression errors without crashing or becoming unresponsive.
+    - **Do** regularly update your compression libraries to incorporate the latest security patches and protect against known vulnerabilities.
+    - **Do** educate users about the risks associated with decompression bombs, especially if they have the ability to upload compressed files.
+
+  cwe_id:
+    - 409
+  id: go_gosec_filesystem_decompression_bomb
+  documentation_url: https://docs.bearer.com/reference/rules/go_gosec_filesystem_decompression_bomb
+severity: low

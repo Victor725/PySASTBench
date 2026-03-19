@@ -1,0 +1,73 @@
+patterns:
+  - pattern: $<SESSION>
+    filters:
+      - variable: SESSION
+        detection: go_gorilla_insecure_cookie_session
+        scope: cursor_strict
+      - not:
+          variable: SESSION
+          detection: go_gorilla_insecure_cookie_secure_true
+          scope: cursor_strict
+auxiliary:
+  - id: go_gorilla_insecure_cookie_sessions_init
+    patterns:
+      - import $<!>"github.com/gorilla/sessions"
+      - |
+        import (
+          $<!>"github.com/gorilla/sessions"
+        )
+  - id: go_gorilla_insecure_cookie_true
+    patterns:
+      - "true"
+  - id: go_gorilla_insecure_cookie_secure_true
+    patterns:
+      - pattern: "$<_>{ Secure: $<TRUE> }"
+        filters:
+          - variable: "TRUE"
+            detection: go_gorilla_insecure_cookie_true
+            scope: cursor
+  - id: go_gorilla_insecure_cookie_session
+    patterns:
+      - pattern: $<SESSION>.Options{}
+        filters:
+          - variable: SESSION
+            detection: go_gorilla_insecure_cookie_sessions_init
+            scope: cursor
+languages:
+  - go
+metadata:
+  description: "Missing Secure option in cookie configuration"
+  remediation_message: |-
+    ## Description
+
+    The Secure attribute in cookie configuration is crucial for protecting cookies from unauthorized third-party access. When set to "true," it ensures cookies are only sent over HTTPS, safeguarding the data during transmission.
+
+    ## Remediations
+
+    - **Do** set the Secure flag for cookies if your site uses HTTPS. This action restricts cookies to secure channels, enhancing their security.
+      ```go
+      http.SetCookie(w, &http.Cookie{
+          Name:     "session_token",
+          Value:    sessionToken,
+          Secure:   true,
+          HttpOnly: true,
+      })
+      ```
+    - **Do** use Gorilla SecureCookie for encoding and decoding session data securely. This method provides an additional layer of security for session information.
+      ```go
+      var s = sessions.NewCookieStore([]byte("your-secret-key"))
+      ```
+    - **Do** implement robust session management with Gorilla Sessions. Proper session management helps prevent attacks related to session fixation and enhances overall session security.
+
+    ## References
+
+    - [Gorilla Sessions Documentation](http://www.gorillatoolkit.org/pkg/sessions)
+    - [OWASP Session Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html)
+    - [OWASP Cookies Properties](https://owasp.org/www-community/controls/SecureCookieAttribute)
+
+  cwe_id:
+    - 614
+  id: go_gorilla_insecure_cookie
+  documentation_url: https://docs.bearer.com/reference/rules/go_gorilla_insecure_cookie
+  cloud_code_suggestions: true
+severity: medium

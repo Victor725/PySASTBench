@@ -1,0 +1,383 @@
+languages:
+  - ruby
+imports:
+  - ruby_shared_common_user_input
+patterns:
+  - pattern: |
+      Net::HTTP.$<METHOD>($<USER_INPUT>$<...>)
+    filters:
+      - variable: METHOD
+        values:
+          - post
+          - post_form
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+  - pattern: |
+      Net::HTTP.$<METHOD>($<...>$<USER_INPUT>$<...>)$<...>
+    filters:
+      - variable: METHOD
+        values:
+          - get
+          - get_print
+          - get_response
+          - new
+          - newobj
+          - start
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+  - pattern: |
+      Net::HTTP::$<CLASS>.new($<USER_INPUT>$<...>)
+    filters:
+      - variable: CLASS
+        values:
+          - Get
+          - Head
+          - Post
+          - Put
+          - Delete
+          - Options
+          - Trace
+          - Patch
+          - Propfind
+          - Proppatch
+          - Mkcol
+          - Copy
+          - Move
+          - Lock
+          - Unlock
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+  - pattern: |
+      $<NET_HTTP>.$<METHOD>($<USER_INPUT>$<...>)$<...>
+    filters:
+      - variable: NET_HTTP
+        detection: ruby_lang_http_url_using_user_input_net_http
+        scope: cursor
+      - variable: METHOD
+        values:
+          - copy
+          - delete
+          - get
+          - get2
+          - head
+          - head2
+          - lock
+          - mkcol
+          - move
+          - options
+          - patch
+          - post
+          - post2
+          - propfind
+          - proppatch
+          - request_get
+          - request_head
+          - request_post
+          - trace
+          - unlock
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+  - pattern: |
+      $<NET_HTTP>.send_request($<_>, $<USER_INPUT>$<...>)
+    filters:
+      - variable: NET_HTTP
+        detection: ruby_lang_http_url_using_user_input_net_http
+        scope: cursor
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+  - pattern: |
+      $<NET_HTTP>.ipaddr = $<USER_INPUT>
+    filters:
+      - variable: NET_HTTP
+        detection: ruby_lang_http_url_using_user_input_net_http
+        scope: cursor
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+  - pattern: $<URI>.$<METHOD>$<...>
+    filters:
+      - variable: URI
+        detection: ruby_lang_http_url_using_user_input_uri
+        scope: cursor
+      - variable: METHOD
+        values:
+          - open
+          - read
+  - pattern: open($<URI>$<...>)$<...>
+    filters:
+      - variable: URI
+        detection: ruby_lang_http_url_using_user_input_uri
+        scope: cursor
+  - pattern: Kernel.open($<URI>$<...>)$<...>
+    filters:
+      - variable: URI
+        detection: ruby_lang_http_url_using_user_input_uri
+        scope: cursor
+  - pattern: |
+      Curl.http($<_>, $<USER_INPUT>$<...>)$<...>
+    filters:
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+  - pattern: |
+      Curl.$<METHOD>($<USER_INPUT>$<...>)$<...>
+    filters:
+      - variable: METHOD
+        values:
+          - get
+          - post
+          - put
+          - delete
+          - patch
+          - head
+          - options
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+  - pattern: |
+      Curl::Easy.$<METHOD>($<USER_INPUT>$<...>)$<...>
+    filters:
+      - variable: METHOD
+        values:
+          - new
+          - perform
+          - download
+          - http_delete
+          - http_post
+          - http_put
+          - http_head
+          - http_get
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+  - pattern: |
+      $<CURB>.url = $<USER_INPUT>
+    filters:
+      - variable: CURB
+        detection: ruby_lang_http_url_using_user_input_curb
+        scope: cursor
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+  - pattern: |
+      Curl::Multi.$<METHOD>($<USER_INPUT>$<...>)$<...>
+    filters:
+      - variable: METHOD
+        values:
+          - get
+          - download
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+  - pattern: |
+      Curl::Multi.$<METHOD>($<USER_INPUT_URL_HASH>$<...>)$<...>
+    filters:
+      - variable: METHOD
+        values:
+          - http
+          - post
+          - put
+      - variable: USER_INPUT_URL_HASH
+        detection: ruby_lang_http_url_using_user_input_url_hash
+        scope: result
+  - pattern: |
+      Excon::Connection.new($<...>$<USER_INPUT>$<...>)
+    filters:
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+  - pattern: |
+      Excon.$<METHOD>($<USER_INPUT>$<...>)
+    filters:
+      - variable: METHOD
+        values:
+          - new
+          - connect
+          - delete
+          - get
+          - head
+          - options
+          - patch
+          - post
+          - put
+          - trace
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+  - pattern: |
+      Excon.$<METHOD>(path: $<USER_INPUT>)
+    filters:
+      - variable: METHOD
+        values:
+          - new
+          - connect
+          - delete
+          - get
+          - head
+          - options
+          - patch
+          - post
+          - put
+          - trace
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+  - pattern: |
+      $<EXCON>.$<METHOD>(path: $<USER_INPUT>)
+    filters:
+      - variable: METHOD
+        values:
+          - request
+          - connect
+          - delete
+          - get
+          - head
+          - options
+          - patch
+          - post
+          - put
+          - trace
+      - variable: EXCON
+        detection: ruby_lang_http_url_using_user_input_excon
+        scope: cursor
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+  - pattern: |
+      $<EXCON>.requests($<USER_INPUT_PATH_HASH>)
+    filters:
+      - variable: EXCON
+        detection: ruby_lang_http_url_using_user_input_excon
+        scope: cursor
+      - variable: USER_INPUT_PATH_HASH
+        detection: ruby_lang_http_url_using_user_input_path_hash
+        scope: result
+  - pattern: |
+      $<CLIENT>.get($<USER_INPUT>$<...>)$<...>
+    filters:
+      - variable: CLIENT
+        values:
+          - Faraday
+          - HTTP
+          - HTTParty
+          - HTTPX
+          - RestClient
+          - Typhoeus
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+  - pattern: |
+      $<CLIENT>.post($<USER_INPUT>$<...>)$<...>
+    filters:
+      - variable: CLIENT
+        values:
+          - Faraday
+          - HTTP
+          - HTTParty
+          - HTTPX
+          - RestClient
+          - Typhoeus
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+auxiliary:
+  - id: ruby_lang_http_url_using_user_input_net_http_new
+    patterns:
+      - |
+        Net::HTTP.start($<_>$<...>) { |$<!>$<_:identifier>| }
+      - pattern: |
+          Net::HTTP.$<NEW_METHOD>($<_>$<...>)
+        filters:
+          - variable: NEW_METHOD
+            values:
+              - new
+              - newobj
+              - start
+  - id: ruby_lang_http_url_using_user_input_uri
+    patterns:
+      - pattern: URI($<USER_INPUT>)
+        filters:
+          - variable: USER_INPUT
+            detection: ruby_shared_common_user_input
+            scope: result
+  - id: ruby_lang_http_url_using_user_input_net_http
+    patterns:
+      - pattern: |
+          $<NET_HTTP_NEW>
+        filters:
+          - variable: NET_HTTP_NEW
+            detection: ruby_lang_http_url_using_user_input_net_http_new
+            scope: cursor
+      - pattern: |
+          $<NET_HTTP_NEW>.start { |$<!>$<_:identifier>| }
+        filters:
+          - variable: NET_HTTP_NEW
+            detection: ruby_lang_http_url_using_user_input_net_http_new
+            scope: cursor
+      - pattern: |
+          $<NET_HTTP_NEW>.start
+        filters:
+          - variable: NET_HTTP_NEW
+            detection: ruby_lang_http_url_using_user_input_net_http_new
+            scope: cursor
+  - id: ruby_lang_http_url_using_user_input_curb
+    patterns:
+      - |
+        Curl::Easy.new$<...>
+  - id: ruby_lang_http_url_using_user_input_excon
+    patterns:
+      - |
+        Excon.new$<...>
+      - |
+        Excon::Connection.new$<...>
+  - id: ruby_lang_http_url_using_user_input_url_hash
+    patterns:
+      - pattern: |
+          { url: $<USER_INPUT> }
+        filters:
+          - variable: USER_INPUT
+            detection: ruby_shared_common_user_input
+            scope: result
+  - id: ruby_lang_http_url_using_user_input_path_hash
+    patterns:
+      - pattern: |
+          { path: $<USER_INPUT> }
+        filters:
+          - variable: USER_INPUT
+            detection: ruby_shared_common_user_input
+            scope: result
+severity: high
+metadata:
+  description: "Unsanitized user input in HTTP request (SSRF)"
+  remediation_message: |-
+    ## Description
+
+    Including user input when constructing URLs makes your application vulnerable to Server-Side Request Forgery (SSRF), which allows attackers to manipulate the server into making requests to unintended locations.
+
+    ## Remediations
+
+    - **Do not** directly incorporate user input into HTTP URLs. This can lead to SSRF vulnerabilities.
+      ```ruby
+      Faraday.get("https://#{params[:host]}") # unsafe
+      ```
+    - **Do** validate or map user input against a predefined list of safe values before using it to form URLs. This approach reduces the risk of SSRF attacks.
+      ```ruby
+      host =
+        case params[:host]
+        when "option1"
+          "api1.com"
+        when "option2"
+          "api2.com"
+        end
+
+      Faraday.get("https://#{host}")
+      ```
+  cwe_id:
+    - 918
+  id: ruby_lang_http_url_using_user_input
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_lang_http_url_using_user_input

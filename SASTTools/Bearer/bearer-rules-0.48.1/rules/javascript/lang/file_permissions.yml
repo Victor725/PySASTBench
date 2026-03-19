@@ -1,0 +1,60 @@
+imports:
+  - javascript_shared_import_library
+patterns:
+  - pattern: |
+      $<MODULE>.$<FUNCTION>($<_>, $<MASK>)
+    filters:
+      - variable: MODULE
+        detection: javascript_lang_file_permissions_init
+        scope: cursor
+      - variable: FUNCTION
+        values:
+          - chmodSync
+          - chmod
+      - variable: MASK
+        detection: javascript_lang_file_permissions_mask
+        scope: result
+auxiliary:
+  - id: javascript_lang_file_permissions_init
+    patterns:
+      - pattern: $<LIBRARY>
+        filters:
+          - variable: LIBRARY
+            detection: javascript_shared_import_library
+            scope: cursor
+            filters:
+              - variable: JAVASCRIPT_SHARED_IMPORT_LIBRARY_NAME
+                string_regex: \Afs(\/promises)?\z
+  - id: javascript_lang_file_permissions_mask
+    patterns:
+      - pattern: $<MASK>
+        filters:
+          - either:
+              - variable: MASK
+                regex: \A0o?7
+              - variable: MASK
+                regex: \A0o?\d[1-7]
+              - variable: MASK
+                regex: \A0o?\d\d[1-7]
+languages:
+  - javascript
+severity: high
+metadata:
+  description: "Permissive file assignment"
+  remediation_message: |-
+    ## Description
+
+    Permissive file assignment exposes sensitive information by granting unnecessary read, write, or execute permissions to users without ownership privileges.
+
+    ## Remediations
+
+    - **Do** keep file permissions as restrictive as possible to minimize the risk of unauthorized access. Use the principle of least privilege to only grant permissions that are absolutely necessary for the operation of the application.
+      ```javascript
+      fs.chmod(path, 0o600);
+      ```
+    - **Do** prefer assigning file permissions to 'groups' rather than 'other' when you need to extend privileges to users who are not the owners. This approach helps in limiting access to a more controlled set of users.
+
+  cwe_id:
+    - 732
+  id: javascript_lang_file_permissions
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_lang_file_permissions

@@ -1,0 +1,41 @@
+imports:
+  - javascript_shared_common_datatype
+patterns:
+  - pattern: |
+      jwt.sign($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: DATA_TYPE
+        detection: javascript_shared_common_datatype
+        scope: result
+languages:
+  - javascript
+skip_data_types:
+  - "Unique Identifier"
+metadata:
+  description: "Leakage of sensitive data in JWT"
+  remediation_message: |-
+    ## Description
+
+    Storing sensitive data in JWTs exposes it to potential security risks. JWTs are designed for transmitting data securely among parties but are not inherently secure storage for sensitive information.
+
+    ## Remediations
+
+    - **Do not** include sensitive data, such as email addresses, in JWTs. This can lead to unauthorized access to personal information.
+      ```javascript
+      const jwt = require('jsonwebtoken');
+      const token = jwt.sign({ user: { email: 'john@gmail.com' }}); // unsafe
+      ```
+    - **Do** use non-sensitive, unique identifiers like a user's UUID in JWTs to reference user information securely.
+      ```javascript
+      const jwt = require('jsonwebtoken');
+      const token = jwt.sign({ user: user.uuid });
+      ```
+
+    ## References
+
+    - [OWASP sensitive data exposure](https://owasp.org/www-project-top-ten/2017/A3_2017-Sensitive_Data_Exposure)
+  cwe_id:
+    - 312
+  id: javascript_lang_jwt
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_lang_jwt
+severity: high

@@ -1,0 +1,45 @@
+patterns:
+  - pattern: |
+      {
+        cookie: $<INSECURE_COOKIE>
+      }
+    filters:
+      - variable: INSECURE_COOKIE
+        detection: javascript_express_cookie_missing_http_only_config
+        scope: result
+  - pattern: |
+      cookieSession($<INSECURE_COOKIE>)
+    filters:
+      - variable: INSECURE_COOKIE
+        detection: javascript_express_cookie_missing_http_only_config
+        scope: result
+auxiliary:
+  - id: javascript_express_cookie_missing_http_only_config
+    patterns:
+      - pattern: |
+          { httpOnly: false }
+languages:
+  - javascript
+metadata:
+  description: Missing HTTP Only option in cookie configuration
+  remediation_message: |-
+    ## Description
+
+    Your cookies are at risk if the HTTP Only option is not configured. This setting prevents client-side JavaScript, such as the code that reads "document.cookie" values, from accessing the cookie's value. Enabling this option is crucial for websites prone to Cross-Site Scripting (XSS) attacks, because it prevents malicious scripts from obtaining the cookie's data.
+
+    ## Remediations
+
+    - **Do** set the `HttpOnly` attribute to `true` in your cookie configuration. This action ensures that cookies are shielded from unauthorized client-side access.
+      ```javascript
+      cookie({ httpOnly: true });
+      ```
+
+    ## References
+
+    - [Express Security Best Practices](https://expressjs.com/en/advanced/best-practice-security.html#use-cookies-securely)
+  cwe_id:
+    - 1004
+  id: javascript_express_cookie_missing_http_only
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_express_cookie_missing_http_only
+  cloud_code_suggestions: true
+severity: medium

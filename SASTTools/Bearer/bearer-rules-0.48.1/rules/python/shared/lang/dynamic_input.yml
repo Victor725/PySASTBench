@@ -1,0 +1,50 @@
+type: shared
+languages:
+  - python
+imports:
+  - python_shared_lang_import1
+patterns:
+  - pattern: $<PARSER>.parse_args($<...>)
+    filters:
+      - variable: PARSER
+        detection: python_shared_lang_dynamic_input_parser
+        scope: result
+  - pattern: $<GETOPT>($<...>)
+    filters:
+      - variable: GETOPT
+        detection: python_shared_lang_import1
+        scope: cursor
+        filters:
+          - variable: MODULE1
+            values: [getopt]
+          - variable: NAME
+            values: [getopt]
+  - pattern: $<DYNAMIC_INPUT>;
+    filters:
+      - variable: DYNAMIC_INPUT
+        detection: python_shared_lang_dynamic_input_input
+        scope: cursor_strict
+auxiliary:
+  - id: python_shared_lang_dynamic_input_parser
+    patterns:
+      - pattern: $<ARG_PARSER>()
+        filters:
+          - variable: ARG_PARSER
+            detection: python_shared_lang_import1
+            scope: cursor
+            filters:
+              - variable: MODULE1
+                values: [argparse]
+              - variable: NAME
+                values: [ArgumentParser]
+  - id: python_shared_lang_dynamic_input_input
+    patterns:
+      - |
+        def $<_>($<...>$<!>$<ARG>$<...>):
+      - |
+        def $<_>($<...>$<!>$<ARG>=$<_>$<...>):
+      - |
+        def $<_>($<...>$<!>$<ARG>:$<_>$<...>):
+metadata:
+  description: "Python dynamic input."
+  id: python_shared_lang_dynamic_input

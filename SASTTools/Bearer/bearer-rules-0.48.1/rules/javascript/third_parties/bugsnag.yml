@@ -1,0 +1,84 @@
+imports:
+  - javascript_shared_common_datatype
+patterns:
+  - pattern: |
+      $<INSTANCE>.notify($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - either:
+          - variable: INSTANCE
+            detection: javascript_third_parties_bugsnag_client
+            scope: cursor
+          - variable: INSTANCE
+            detection: javascript_third_parties_bugsnag_session
+            scope: cursor
+      - variable: DATA_TYPE
+        detection: javascript_shared_common_datatype
+        scope: result
+  - pattern: |
+      $<CLIENT>.leaveBreadcrumb($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: CLIENT
+        detection: javascript_third_parties_bugsnag_client
+        scope: cursor
+      - variable: DATA_TYPE
+        detection: javascript_shared_common_datatype
+        scope: result
+  - pattern: |
+      $<CLIENT>.start($<START_DATA_TYPE>)
+    filters:
+      - variable: CLIENT
+        detection: javascript_third_parties_bugsnag_client
+        scope: cursor
+      - variable: START_DATA_TYPE
+        detection: javascript_third_parties_bugsnag_start_data_type
+languages:
+  - javascript
+auxiliary:
+  - id: javascript_third_parties_bugsnag_client
+    patterns:
+      - |
+        Bugsnag
+  - id: javascript_third_parties_bugsnag_session
+    patterns:
+      - pattern: $<CLIENT>.startSession()
+        filters:
+          - variable: CLIENT
+            detection: javascript_third_parties_bugsnag_client
+            scope: cursor
+  - id: javascript_third_parties_bugsnag_start_data_type
+    patterns:
+      - pattern: $<_>.$<_>($<...>$<DATA_TYPE>$<...>)
+        filters:
+          - variable: DATA_TYPE
+            detection: javascript_shared_common_datatype
+            scope: result
+skip_data_types:
+  - "Unique Identifier"
+metadata:
+  description: "Leakage of sensitive data to Bugsnag"
+  remediation_message: |
+    ## Description
+
+    Leaking sensitive data to third-party loggers like Bugsnag is a common cause of data leaks and can lead to data breaches.
+
+    ## Remediations
+
+    - **Do** ensure all sensitive data is removed when sending data to third-party loggers like Bugsnag.
+    - **Do** use unique identifiers from the database if you really need to identify users.
+      ```javascript
+        import { Bugsnag } from "@bugsnag/js"
+
+        var bugSession = Bugsnag.startSession()
+        bugSession.notify(user.uuid)
+      ```
+
+    ## References
+    - [Bugsnag Docs](https://docs.bugsnag.com/platforms/javascript/)
+    - [OWASP logging cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html)
+  cwe_id:
+    - 201
+  associated_recipe: Bugsnag
+  id: javascript_third_parties_bugsnag
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_third_parties_bugsnag
+  cloud_code_suggestions: true
+severity: medium

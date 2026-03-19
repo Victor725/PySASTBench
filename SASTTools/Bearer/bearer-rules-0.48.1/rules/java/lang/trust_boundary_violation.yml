@@ -1,0 +1,65 @@
+imports:
+  - java_shared_lang_servlet_request
+  - java_shared_lang_instance
+patterns:
+  - pattern: $<REQUEST>.setAttribute($<NAME>, $<VALUE>);
+    filters:
+      - variable: REQUEST
+        detection: java_shared_lang_servlet_request
+        scope: cursor
+      - either:
+          - not:
+              variable: NAME
+              detection: string_literal
+              scope: cursor
+          - not:
+              variable: VALUE
+              detection: string_literal
+              scope: cursor
+  - pattern: $<SESSION>.$<METHOD>($<NAME>, $<VALUE>);
+    filters:
+      - variable: SESSION
+        detection: java_lang_trust_boundary_violation_session
+        scope: cursor
+      - variable: METHOD
+        values:
+          - setAttribute
+          - putValue
+      - either:
+          - not:
+              variable: NAME
+              detection: string_literal
+              scope: cursor
+          - not:
+              variable: VALUE
+              detection: string_literal
+              scope: cursor
+auxiliary:
+  - id: java_lang_trust_boundary_violation_session
+    patterns:
+      - $<_>.getSession();
+      - pattern: $<SESSION_INSTANCE>;
+        filters:
+          - variable: SESSION_INSTANCE
+            detection: java_shared_lang_instance
+            scope: cursor
+            filters:
+              - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+                regex: \A(javax\.servlet\.http\.)?HttpSession\z
+languages:
+  - java
+severity: medium
+metadata:
+  description: "Usage of trusted and untrusted data inside the same data structure"
+  remediation_message: |-
+    ## Description
+
+    Combining trusted and untrusted data within a single data structure poses a significant security risk. This practice may result in untrusted data being incorrectly regarded as trustworthy, potentially leading to security vulnerabilities.
+
+    ## Remediations
+
+    - **Do not** mix trusted and untrusted data in the same data structure. Keeping them separate ensures that untrusted data does not accidentally gain the same level of trust as the verified data.
+  cwe_id:
+    - 501
+  id: java_lang_trust_boundary_violation
+  documentation_url: https://docs.bearer.com/reference/rules/java_lang_trust_boundary_violation

@@ -1,0 +1,49 @@
+imports:
+  - java_shared_lang_user_input
+  - java_shared_lang_logger_methods
+patterns:
+  - pattern: |
+      $<LOG>.$<METHOD>($<...>$<USER_INPUT>$<...>)
+    filters:
+      - variable: USER_INPUT
+        detection: java_shared_lang_user_input
+        scope: result
+      - variable: METHOD
+        detection: java_shared_lang_logger_methods
+      - variable: LOG
+        values:
+          - log
+          - logger
+languages:
+  - java
+
+metadata:
+  description: "Unsanitized user input in logger message"
+  remediation_message: |-
+    ## Description
+
+    Logging unsanitized user input can lead to log forgery or malicious content injection. This vulnerability arises when user input is directly included in log messages without proper sanitization.
+
+    ## Remediations
+
+    - **Do not** include unsanitized user input in log messages. This can allow attackers to manipulate log files or inject harmful content.
+      ```java
+      String username = request.getParameter("username");
+      log.warn("Username is" + username); // unsafe
+      ```
+    - **Do** sanitize user input before logging it. Ensure that any data derived from user input is cleaned to prevent log injection attacks.
+      ```java
+      String username = sanitized(request.getParameter("username"));
+      log.warn("Username is" + username);
+      ```
+    ## References
+
+    - [OWASP Log Injection](https://owasp.org/www-community/attacks/Log_Injection)
+    - [OWASP logging cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html)
+
+  cwe_id:
+    - 117
+
+  id: "java_lang_log_injection"
+  documentation_url: https://docs.bearer.com/reference/rules/java_lang_logger
+severity: low

@@ -1,0 +1,28 @@
+patterns:
+  - pattern: |
+      DriverManager.getConnection($<_>, $<_>, $<EMPTY_STRING>)
+    filters:
+      - variable: EMPTY_STRING
+        string_regex: \A\z
+languages:
+  - java
+severity: high
+metadata:
+  description: "Missing authentication for database"
+  remediation_message: |-
+    ## Description
+
+    Your database is at high risk if it lacks proper authentication mechanisms. This vulnerability makes it an easy target for unauthorized access and potential security breaches.
+
+    ## Remediations
+
+    - **Do** configure your database server with recommended authentication configuration, including a strong password and username.
+    - **Do** implement a key management system to securely manage and store your passwords.
+
+    ## References
+
+    - [OWASP Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
+  cwe_id:
+    - 306
+  id: java_lang_missing_database_authentication
+  documentation_url: https://docs.bearer.com/reference/rules/java_lang_missing_database_authentication

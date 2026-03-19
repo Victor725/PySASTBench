@@ -1,0 +1,209 @@
+languages:
+  - javascript
+imports:
+  - javascript_shared_common_html_user_input
+patterns:
+  - pattern: $<STRING>
+    filters:
+      - variable: STRING
+        string_regex: <\w+(\s[^>]*)?>
+      - variable: STRING
+        detection: javascript_shared_common_html_user_input
+        scope: result
+  - pattern: $<LIB>.$<METHOD>($<STRING>$<...>)
+    filters:
+      - variable: LIB
+        regex: \A(?i)dot\z
+      - variable: METHOD
+        values:
+          - compile
+          - template
+      - variable: STRING
+        detection: javascript_shared_common_html_user_input
+        scope: result
+  - pattern: ejs.$<METHOD>($<STRING>$<...>)
+    filters:
+      - variable: METHOD
+        values:
+          - compile
+          - render
+      - variable: STRING
+        detection: javascript_shared_common_html_user_input
+        scope: result
+  - pattern: Handlebars.$<METHOD>($<STRING>$<...>)
+    filters:
+      - variable: METHOD
+        values:
+          - compile
+          - precompile
+      - variable: STRING
+        detection: javascript_shared_common_html_user_input
+        scope: result
+  - pattern: Hogan.$<METHOD>($<STRING>$<...>)
+    filters:
+      - variable: METHOD
+        values:
+          - compile
+          - parse
+      - variable: STRING
+        detection: javascript_shared_common_html_user_input
+        scope: result
+  - pattern: $<OBJECT>.templates($<STRING>$<...>)
+    filters:
+      - variable: OBJECT
+        values:
+          - $
+          - jsrender
+      - variable: STRING
+        detection: javascript_shared_common_html_user_input
+        scope: result
+  # lodash
+  - pattern: template($<STRING>$<...>)
+    filters:
+      - variable: STRING
+        detection: javascript_shared_common_html_user_input
+        scope: result
+  # lodash or underscore
+  - pattern: $<LIB>.template($<STRING>$<...>)
+    filters:
+      - variable: LIB
+        values:
+          - _
+          - lodash
+          - underscore
+      - variable: STRING
+        detection: javascript_shared_common_html_user_input
+        scope: result
+  # marko
+  - pattern: compiler.$<METHOD>($<STRING>$<...>)
+    filters:
+      - variable: METHOD
+        values:
+          - compile
+          - compileSync
+      - variable: STRING
+        detection: javascript_shared_common_html_user_input
+        scope: result
+  - pattern: Mustache.$<METHOD>($<STRING>$<...>)
+    filters:
+      - variable: METHOD
+        values:
+          - parse
+          - render
+      - variable: STRING
+        detection: javascript_shared_common_html_user_input
+        scope: result
+  - pattern: nunjucks.$<METHOD>($<STRING>$<...>)
+    filters:
+      - variable: METHOD
+        values:
+          - renderString
+          - compile
+      - variable: STRING
+        detection: javascript_shared_common_html_user_input
+        scope: result
+  - pattern: pug.$<METHOD>($<STRING>$<...>)
+    filters:
+      - variable: METHOD
+        values:
+          - render
+          - compile
+      - variable: STRING
+        detection: javascript_shared_common_html_user_input
+        scope: result
+  - pattern: Sqrl.$<METHOD>($<STRING>$<...>)
+    filters:
+      - variable: METHOD
+        values:
+          - render
+          - compile
+          - parse
+      - variable: STRING
+        detection: javascript_shared_common_html_user_input
+        scope: result
+  - pattern: Template7.compile($<STRING>$<...>)
+    filters:
+      - variable: STRING
+        detection: javascript_shared_common_html_user_input
+        scope: result
+  - pattern: webix.ui($<TEMPLATE>)
+    filters:
+      - variable: TEMPLATE
+        detection: javascript_lang_raw_html_using_user_input_webix_template
+        scope: result
+  - pattern: $<LIB>.$<METHOD>($<STRING>$<...>)
+    filters:
+      - variable: LIB
+        regex: \A(?i)eta\z
+      - variable: METHOD
+        values:
+          - render
+          - compile
+      - variable: STRING
+        detection: javascript_shared_common_html_user_input
+        scope: result
+  - pattern: whiskers.$<METHOD>($<STRING>$<...>)
+    filters:
+      - variable: METHOD
+        values:
+          - render
+          - compile
+      - variable: STRING
+        detection: javascript_shared_common_html_user_input
+        scope: result
+  - pattern: |
+      $<LIQUID_INIT>.$<METHOD>($<STRING>$<...>)
+    filters:
+      - variable: LIQUID_INIT
+        detection: javascript_lang_raw_html_using_user_input_liquid_init
+        scope: cursor
+      - variable: METHOD
+        values:
+          - parse
+          - parseAndRender
+          - parseAndRenderSync
+      - variable: STRING
+        detection: javascript_shared_common_html_user_input
+        scope: result
+auxiliary:
+  - id: javascript_lang_raw_html_using_user_input_webix_template
+    patterns:
+      - pattern: |
+          { template: $<STRING> }
+        filters:
+          - variable: STRING
+            detection: javascript_shared_common_html_user_input
+            scope: result
+  - id: javascript_lang_raw_html_using_user_input_liquid_init
+    patterns:
+      - new Liquid()
+severity: high
+metadata:
+  description: "Unsanitized user input in raw HTML strings (XSS)"
+  remediation_message: |-
+    ## Description
+
+    Including unsanitized user input in HTML exposes your application to cross-site scripting (XSS) attacks. This vulnerability allows attackers to inject malicious scripts into web pages viewed by other users.
+
+    ## Remediations
+
+    - **Do not** include user input directly in HTML strings. This practice can lead to XSS vulnerabilities.
+      ```javascript
+      const html = `<h1>${req.params.title}</h1>` // unsafe
+      ```
+    - **Do** use a framework or templating language that automatically handles the encoding and sanitization of user input when constructing HTML. This approach minimizes the risk of XSS attacks.
+    - **Do** sanitize user input if you must use HTML strings directly. Utilize libraries designed for input sanitization to ensure that user input does not contain malicious content.
+      ```javascript
+      import sanitizeHtml from 'sanitize-html'
+
+      const sanitizedTitle = sanitizeHtml(req.params.title)
+      const html = `<h1>${sanitizedTitle}</h1>`
+      ```
+
+    ## References
+
+    - [OWASP Cross-Site Scripting (XSS) Cheatsheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)
+  cwe_id:
+    - 79
+  id: javascript_lang_raw_html_using_user_input
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_lang_raw_html_using_user_input

@@ -1,0 +1,49 @@
+patterns:
+  - pattern: |
+      DOMPurify.sanitize($<_>, $<CONFIG>)
+    filters:
+      - not:
+          variable: CONFIG
+          detection: javascript_dom_purify_safe_config
+          scope: cursor
+  - |
+    DOMPurify.sanitize($<_>)
+auxiliary:
+  - id: javascript_dom_purify_safe_config
+    patterns:
+      - pattern: |
+          { RETURN_DOM_FRAGMENT: true }
+      - pattern: |
+          { RETURN_DOM_IMPORT: true }
+languages:
+  - javascript
+dependency_check: true
+dependency:
+  name: dompurify
+  min_version: 2.0.17
+  filename: package.json
+severity: high
+metadata:
+  description: Usage of vulnerable DOMPurify package
+  remediation_message: |
+    ## Description
+
+    For DOMPurify versions less than 2.0.17, there are XSS vulnerabilities when using the sanitize function without proper configuration.
+
+    ## Remediations
+
+    - **Do** upgrade DOMPurify to version 2.0.17 or greater, and specify a secure configuration option.
+      ```javascript
+        // either
+        DOMPurify.sanitize(htmlToSanitize, { RETURN_DOM_IMPORT:true })
+        // or
+        DOMPurify.sanitize(htmlToSanitize, { RETURN_DOM_FRAGMENT: true })
+      ```
+
+    ## References
+    - [Vulnerability explained](https://research.securitum.com/mutation-xss-via-mathml-mutation-dompurify-2-0-17-bypass)
+  cwe_id:
+    - 79
+  id: javascript_third_parties_dom_purify
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_third_parties_dom_purify
+  cloud_code_suggestions: true

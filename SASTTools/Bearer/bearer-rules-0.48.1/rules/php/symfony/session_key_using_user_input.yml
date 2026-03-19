@@ -1,0 +1,63 @@
+imports:
+  - php_shared_lang_user_input
+  - php_shared_lang_instance
+patterns:
+  - pattern: $<SESSION>->$<METHOD>($<USER_INPUT>$<...>)
+    filters:
+      - variable: SESSION
+        detection: php_symfony_session_key_using_user_input_session
+        scope: cursor
+      - variable: METHOD
+        values:
+          - get
+          - put
+      - variable: USER_INPUT
+        detection: php_shared_lang_user_input
+        scope: result
+auxiliary:
+  - id: php_symfony_session_key_using_user_input_session
+    patterns:
+      - pattern: $<REQUEST_STACK>->getSession()
+        filters:
+          - variable: REQUEST_STACK
+            detection: php_shared_lang_instance
+            scope: cursor
+            filters:
+              - variable: CLASS
+                regex: \A(\\?Symfony\\Component\\HttpFoundation\\)?RequestStack\z
+      - pattern: $<REQUEST>->getSession()
+        filters:
+          - variable: REQUEST
+            detection: php_shared_lang_instance
+            scope: cursor
+            filters:
+              - variable: CLASS
+                regex: \A(\\?Symfony\\Component\\HttpFoundation\\)?Request\z
+      # fallback until we have instance variable support
+      - $<_>->getSession()
+languages:
+  - php
+severity: critical
+metadata:
+  description: "Unsanitized user input in session key"
+  remediation_message: |-
+    ## Description
+
+    Incorporating user-provided data directly into session keys poses a significant security risk. This practice can allow attackers to manipulate session data or perform unauthorized actions by exploiting the predictability or vulnerability of the session mechanism.
+
+    ## Remediations
+
+    - **Do not** use user-defined data directly in session keys. This can lead to vulnerabilities where attackers might exploit the session management.
+      ```php
+      $session = $requestStack->getSession();
+      $session->put($userInput, $data); // unsafe
+      ```
+    - **Do** sanitize user input before incorporating it into session keys. Ensure that any data derived from user input is properly validated and sanitized to prevent injection attacks.
+
+    ## References
+
+    - [OWASP Session Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html)
+  cwe_id:
+    - 1018
+  id: php_symfony_session_key_using_user_input
+  documentation_url: https://docs.bearer.com/reference/rules/php_symfony_session_key_using_user_input

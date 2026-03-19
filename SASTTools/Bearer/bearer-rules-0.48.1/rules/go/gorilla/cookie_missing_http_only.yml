@@ -1,0 +1,73 @@
+patterns:
+  - pattern: $<SESSION>
+    filters:
+      - variable: SESSION
+        detection: go_gorilla_cookie_missing_http_only_session
+        scope: cursor_strict
+      - not:
+          variable: SESSION
+          detection: go_gorilla_cookie_missing_http_only_http_only_true
+          scope: cursor_strict
+auxiliary:
+  - id: go_gorilla_cookie_missing_http_only_sessions_init
+    patterns:
+      - import $<!>"github.com/gorilla/sessions"
+      - |
+        import (
+          $<!>"github.com/gorilla/sessions"
+        )
+  - id: go_gorilla_cookie_missing_http_only_true
+    patterns:
+      - "true"
+  - id: go_gorilla_cookie_missing_http_only_http_only_true
+    patterns:
+      - pattern: "$<_>{ HttpOnly: $<TRUE> }"
+        filters:
+          - variable: "TRUE"
+            detection: go_gorilla_cookie_missing_http_only_true
+            scope: cursor
+  - id: go_gorilla_cookie_missing_http_only_session
+    patterns:
+      - pattern: $<SESSION>.Options{}
+        filters:
+          - variable: SESSION
+            detection: go_gorilla_cookie_missing_http_only_sessions_init
+            scope: cursor
+languages:
+  - go
+metadata:
+  description: Missing HTTP Only option in cookie configuration
+  remediation_message: |-
+    ## Description
+
+    The absence of the "HttpOnly" attribute in cookie settings leaves the cookie vulnerable to being accessed by client-side JavaScript, such as through "document.cookie". This vulnerability is particularly concerning for websites susceptible to Cross-Site Scripting (XSS) attacks, as it allows malicious scripts to read the cookie value. Properly configuring the "HttpOnly" attribute is a critical step in securing cookies, especially for session management.
+
+    ## Remediations
+
+    - **Do** set the `HttpOnly` attribute to `true` for cookies, especially session cookies, to prevent them from being accessed by client-side scripts. This is a key measure in mitigating the risk of XSS attacks.
+      ```go
+      func MyHandler(w http.ResponseWriter, r *http.Request) {
+          session, _ := store.Get(r, "session-name")
+          ...
+          session.Options.HttpOnly = true
+          session.Save(r, w)
+      }
+      ```
+    - **Do** use Gorilla SecureCookie for encoding and decoding session data securely. This method provides an additional layer of security for session information.
+      ```go
+      var s = sessions.NewCookieStore([]byte("your-secret-key"))
+      ```
+    - **Do** implement robust session management with Gorilla Sessions. Proper session management helps prevent attacks related to session fixation and enhances overall session security.
+
+    ## References
+
+    - [Gorilla Sessions Documentation](http://www.gorillatoolkit.org/pkg/sessions)
+    - [OWASP Session Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html)
+    - [OWASP Cookies Properties](https://owasp.org/www-community/controls/SecureCookieAttribute)
+
+  cwe_id:
+    - 1004
+  id: go_gorilla_cookie_missing_http_only
+  documentation_url: https://docs.bearer.com/reference/rules/go_gorilla_cookie_missing_http_only
+  cloud_code_suggestions: true
+severity: medium

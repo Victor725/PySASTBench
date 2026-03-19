@@ -1,0 +1,95 @@
+patterns:
+  - pattern: $<SET_COOKIE>;
+    filters:
+      - variable: SET_COOKIE
+        detection: php_lang_insecure_cookie_setcookie
+        scope: cursor
+      - not:
+          variable: SET_COOKIE
+          detection: php_lang_insecure_cookie_using_options
+          scope: cursor
+      - not:
+          variable: SET_COOKIE
+          detection: php_lang_insecure_cookie_secure
+          scope: cursor
+  - pattern: $<FUNCTION>($<_>, $<_>, $<OPTIONS>)
+    filters:
+      - variable: FUNCTION
+        values:
+          - setcookie
+          - setrawcookie
+      - variable: OPTIONS
+        detection: php_lang_insecure_cookie_array
+        scope: cursor
+      - not:
+          variable: OPTIONS
+          detection: php_lang_insecure_cookie_secure_option
+          scope: cursor
+auxiliary:
+  - id: php_lang_insecure_cookie_setcookie
+    patterns:
+      - pattern: $<FUNCTION>()
+        filters:
+          - variable: FUNCTION
+            values:
+              - setcookie
+              - setrawcookie
+  - id: php_lang_insecure_cookie_secure
+    patterns:
+      - pattern: $<_>($<_>, $<_>, $<_>, $<_>, $<_>, $<SECURE>$<...>)
+        filters:
+          - variable: SECURE
+            detection: php_lang_insecure_cookie_true
+            scope: cursor
+      - pattern: |
+          $<_>(secure: $<TRUE>)
+        filters:
+          - variable: "TRUE"
+            detection: php_lang_insecure_cookie_true
+            scope: cursor
+  - id: php_lang_insecure_cookie_using_options
+    patterns:
+      - pattern: $<_>($<_>, $<_>, $<OPTIONS>)
+        filters:
+          - variable: OPTIONS
+            detection: php_lang_insecure_cookie_array
+            scope: cursor
+  - id: php_lang_insecure_cookie_true
+    patterns:
+      - pattern: "true;"
+  - id: php_lang_insecure_cookie_array
+    patterns:
+      - pattern: array();
+  - id: php_lang_insecure_cookie_secure_option
+    patterns:
+      - pattern: array('secure' => $<SECURE>)
+        filters:
+          - variable: SECURE
+            detection: php_lang_insecure_cookie_true
+            scope: cursor
+languages:
+  - php
+metadata:
+  description: Missing Secure option in cookie configuration
+  remediation_message: |-
+    ## Description
+
+    When a cookie lacks the Secure attribute, it can be transmitted over insecure connections, making it vulnerable to interception by unauthorized parties. The Secure attribute is important because it instructs the browser to only send the cookie over HTTPS, enhancing security.
+
+    ## Remediations
+
+    - **Do** set the `Secure` attribute to `true` for cookies to ensure they are only sent over HTTPS.
+      ```php
+      setcookie("name", "value", secure: true);
+      ```
+
+    ## References
+
+    - [OWASP Session Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html)
+    - [OWASP Cookies Properties](https://owasp.org/www-community/controls/SecureCookieAttribute)
+  cwe_id:
+    - 614
+  id: php_lang_insecure_cookie
+  documentation_url: https://docs.bearer.com/reference/rules/php_lang_insecure_cookie
+  cloud_code_suggestions: true
+severity: medium

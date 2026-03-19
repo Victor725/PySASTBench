@@ -1,0 +1,209 @@
+imports:
+  - ruby_shared_common_external_input
+patterns:
+  - pattern: ActiveRecord::Base.connection.$<CONN_METHOD>($<EXTERNAL_INPUT>$<...>)
+    filters:
+      - variable: CONN_METHOD
+        detection: ruby_rails_sql_injection_connection_method
+        scope: cursor
+      - variable: EXTERNAL_INPUT
+        detection: ruby_rails_sql_injection_external_input
+        scope: result
+  - pattern: connection.$<CONN_METHOD>($<EXTERNAL_INPUT>$<...>)
+    filters:
+      - variable: CONN_METHOD
+        detection: ruby_rails_sql_injection_connection_method
+        scope: cursor
+      - variable: EXTERNAL_INPUT
+        detection: ruby_rails_sql_injection_external_input
+        scope: result
+  - pattern: $<_>.$<SPECIAL_METHOD>($<EXTERNAL_INPUT>$<...>)
+    filters:
+      - variable: SPECIAL_METHOD
+        detection: ruby_rails_sql_injection_special_arg_method
+        scope: cursor
+      - variable: EXTERNAL_INPUT
+        detection: ruby_rails_sql_injection_external_input
+        scope: result
+      - not:
+          variable: EXTERNAL_INPUT
+          detection: ruby_rails_sql_injection_safe_special_arg
+  - pattern: $<SPECIAL_METHOD>($<EXTERNAL_INPUT>$<...>)
+    filters:
+      - variable: SPECIAL_METHOD
+        detection: ruby_rails_sql_injection_special_arg_method
+        scope: cursor
+      - variable: EXTERNAL_INPUT
+        detection: ruby_rails_sql_injection_external_input
+        scope: result
+      - not:
+          variable: EXTERNAL_INPUT
+          detection: ruby_rails_sql_injection_safe_special_arg
+  - pattern: $<_>.$<METHOD>($<...>$<EXTERNAL_INPUT>$<...>)
+    filters:
+      - variable: METHOD
+        detection: ruby_rails_sql_injection_regular_method
+        scope: cursor
+      - variable: EXTERNAL_INPUT
+        detection: ruby_rails_sql_injection_external_input
+        scope: result
+  - pattern: $<METHOD>($<...>$<EXTERNAL_INPUT>$<...>)
+    filters:
+      - variable: METHOD
+        detection: ruby_rails_sql_injection_regular_method
+        scope: cursor
+      - variable: EXTERNAL_INPUT
+        detection: ruby_rails_sql_injection_external_input
+        scope: result
+  - pattern: $<ACTIVE_RECORD>.$<SHARED_METHOD>($<...>$<EXTERNAL_INPUT>$<...>)
+    filters:
+      - variable: ACTIVE_RECORD
+        detection: ruby_rails_sql_injection_active_record
+        scope: cursor
+      - variable: SHARED_METHOD
+        detection: ruby_rails_sql_injection_shared_method
+        scope: cursor
+      - variable: EXTERNAL_INPUT
+        detection: ruby_rails_sql_injection_external_input
+        scope: result
+auxiliary:
+  - id: ruby_rails_sql_injection_regular_method
+    patterns:
+      - joins
+      - group
+      - having
+      - order
+      - reorder
+      - minimum
+      - maximum
+      - count_by_sql
+      - average
+  - id: ruby_rails_sql_injection_shared_method
+    patterns:
+      - count
+      - select
+      - sum
+  - id: ruby_rails_sql_injection_connection_method
+    patterns:
+      - execute
+      - exec_delete
+      - exec_insert
+      - exec_query
+      - exec_update
+      - select_all
+      - select_one
+      - select_rows
+      - select_value
+      - select_values
+  - id: ruby_rails_sql_injection_special_arg_method
+    patterns:
+      - find_by
+      - find_by!
+      - find_by_sql
+      - find_sole_by
+      - from
+      - where
+      - delete_by
+      - destroy_by
+      - update_all
+  - id: ruby_rails_sql_injection_active_record
+    patterns:
+      - pattern: $<ACTIVE_RECORD>.$<_>($<...>)
+        filters:
+          - variable: ACTIVE_RECORD
+            detection: ruby_rails_sql_injection_active_record
+            scope: cursor
+      - pattern: $<MODEL_NAME>
+        filters:
+          - variable: MODEL_NAME
+            regex: \A[A-Z][a-zA-Z]*[a-z]+\z
+      - pattern: $<_>.$<ASSOCIATION>
+        filters:
+          - variable: ASSOCIATION
+            regex: \A\w*_?s\z
+  - id: ruby_rails_sql_injection_external_input
+    sanitizer: ruby_rails_sql_injection_sanitized
+    patterns:
+      - pattern: $<COMMON_INPUT>
+        filters:
+          - variable: COMMON_INPUT
+            detection: ruby_shared_common_external_input
+            scope: cursor
+  - id: ruby_rails_sql_injection_safe_special_arg
+    patterns:
+      - pattern:
+          | # where(["attr = ?", params[:oops]]) or where({ attr: params[:oops] })
+          $<_>($<OBJECT_ARG>$<...>)
+        focus: OBJECT_ARG
+        filters:
+          - variable: OBJECT_ARG
+            detection: ruby_rails_sql_injection_safe_special_object_arg
+      - pattern:
+          | # User.where(["attr = ?", params[:oops]]) or User.where({ attr: params[:oops] })
+          $<_>.$<_>($<OBJECT_ARG>$<...>)
+        focus: OBJECT_ARG
+        filters:
+          - variable: OBJECT_ARG
+            detection: ruby_rails_sql_injection_safe_special_object_arg
+      - pattern: | # where(attr: params[:oops])
+          $<_>($<_>: $<!>$<_>)
+      - pattern: | # User.where(attr: params[:oops])
+          $<_>.$<_>($<_>: $<!>$<_>)
+  - id: ruby_rails_sql_injection_safe_special_object_arg
+    patterns:
+      - |
+        [$<_>, $<...>$<!>$<_>$<...>]
+      - |
+        { $<_>: $<!>$<_> }
+  - id: ruby_rails_sql_injection_sanitized
+    patterns:
+      - pattern: ActiveRecord::Base.connection.quote($<!>$<_>)
+      - pattern: connection.quote($<!>$<_>)
+      - pattern: $<SANITIZE_METHOD>($<!>$<_>)
+        filters:
+          - variable: SANITIZE_METHOD
+            values:
+              - sanitize_sql
+              - sanitize_sql_for_assignment
+              - sanitize_sql_for_conditions
+              - sanitize_conditions
+      - pattern: $<_>.to_i
+      - pattern: $<_>.to_f
+languages:
+  - ruby
+severity: critical
+metadata:
+  description: "Unsanitized external input in SQL query"
+  remediation_message: |-
+    ## Description
+
+    Using unsanitized data, such as user input or request data, or externally influenced data passed to a function, in SQL query exposes your application to SQL injection attacks. This vulnerability arises when externally controlled data is directly included in SQL statements without proper sanitation, allowing attackers to manipulate queries and access or modify data.
+
+    ## Remediations
+
+    - **Do not** use raw SQL queries that incorporate unsanitized external input directly. This approach is vulnerable to SQL injection.
+      ```ruby
+      User.where("user.email = #{params[:email]}") # unsafe
+      ```
+    - **Do** utilize the ActiveRecord API for constructing SQL queries to automatically handle input sanitization.
+      ```ruby
+      User.where(email: params[:email])
+      ```
+    - **Do** employ bind variables in SQL queries to separate the query structure from the data, effectively preventing SQL injection.
+      ```ruby
+      User.where("user.email = ?", [params[:email]])
+      ```
+    - **Do** manually sanitize input values when constructing SQL queries to ensure that any potentially harmful characters are neutralized.
+      ```ruby
+      User.where(sanitize_sql(["user.email = ?", params[:email]]))
+      ```
+
+    ## References
+
+    - [OWASP SQL injection explained](https://owasp.org/www-community/attacks/SQL_Injection)
+    - [OWASP SQL injection prevention cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html)
+    - [Securing Rails applications - SQL injection](https://guides.rubyonrails.org/security.html#sql-injection)
+  cwe_id:
+    - 89
+  id: ruby_rails_sql_injection
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_rails_sql_injection

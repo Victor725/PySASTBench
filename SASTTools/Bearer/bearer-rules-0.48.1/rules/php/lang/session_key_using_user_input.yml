@@ -1,0 +1,34 @@
+imports:
+  - php_shared_lang_user_input
+patterns:
+  - pattern: $_SESSION[$<USER_INPUT>]
+    filters:
+      - variable: USER_INPUT
+        detection: php_shared_lang_user_input
+        scope: result
+languages:
+  - php
+severity: critical
+metadata:
+  description: "Unsanitized user input in session key"
+  remediation_message: |-
+    ## Description
+
+    Unsanitized user input in session key poses a security risk. When user-defined data is directly used in session keys, attackers could be able to manipulate session data or perform unauthorized actions by exploiting the predictability or vulnerability of the session mechanism.
+
+    ## Remediations
+
+    - **Do not** use user-defined data as session keys. This prevents attackers from being able to guess or forge session keys to hijack user sessions.
+      ```php
+      $userInput = $_GET["untrusted"];
+      call($_SESSION[$userInput]); // unsafe
+      ```
+    - **Do** sanitize user input before incorporating it into session keys. Ensure that any data derived from user input is properly validated and sanitized to prevent injection attacks.
+
+    ## References
+
+    - [OWASP Session Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html)
+  cwe_id:
+    - 1018
+  id: php_lang_session_key_using_user_input
+  documentation_url: https://docs.bearer.com/reference/rules/php_lang_session_key_using_user_input

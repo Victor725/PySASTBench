@@ -1,0 +1,27 @@
+patterns:
+  - ssh.InsecureIgnoreHostKey()
+languages:
+  - go
+metadata:
+  description: "Missing verification of host keys"
+  remediation_message: |-
+    ## Description
+
+    Lacking verification of host key during SSH connections compromises the security of your application. Host keys are essential for verifying the server's identity to prevent Man-in-the-Middle (MitM) attacks, where an attacker could pose as the server. Without this verification, there's no way to ensure the server's authenticity.
+
+    ## Remediations
+
+    - **Do not** use `ssh.InsecureIgnoreHostKey` as a `HostKeyCallback` function. This method bypasses any form of host validation, making your application vulnerable to attacks.
+    - **Do** implement host key verification. For example, use the `knownhosts` package from Go's `x/crypto/ssh` to check server keys against a list of known hosts, similar to OpenSSH's approach.
+    - **Do not** disable host key checking in your production code. While it might seem convenient for development or testing environments, it significantly increases the risk of security breaches.
+
+    ## References
+
+    - [GoDoc for x/crypto/ssh](https://pkg.go.dev/golang.org/x/crypto/ssh)
+    - [Secure use of SSH - OpenSSH](https://www.openssh.com/)
+
+  cwe_id:
+    - 327
+  id: go_gosec_crypto_insecure_ignore_host_key
+  documentation_url: https://docs.bearer.com/reference/rules/go_gosec_crypto_insecure_ignore_host_key
+severity: high

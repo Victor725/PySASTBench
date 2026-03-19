@@ -1,0 +1,50 @@
+patterns:
+  - pattern: |
+      $<EXPRESS_JWT>($<HASH_CONTENT>)
+    filters:
+      - variable: EXPRESS_JWT
+        regex: (?i)\A(expressjwt)\z
+      - variable: HASH_CONTENT
+        detection: javascript_express_jwt_not_revoked_secret
+        scope: cursor
+      - not:
+          variable: HASH_CONTENT
+          detection: javascript_express_jwt_not_revoked_is_revoked
+          scope: cursor
+languages:
+  - javascript
+auxiliary:
+  - id: javascript_express_jwt_not_revoked_secret
+    patterns:
+      - pattern: |
+          { secret: $<_> }
+  - id: javascript_express_jwt_not_revoked_is_revoked
+    patterns:
+      - pattern: |
+          { isRevoked: $<_> }
+severity: medium
+metadata:
+  description: "Missing revoke method on JWT"
+  remediation_message: |-
+    ## Description
+
+    Failing to implement a revoke method for JSON Web Tokens (JWTs) can lead to security vulnerabilities, especially when the tokens contain sensitive information. In order to maintain the integrity and confidentiality of any data contained within JWTs, it is best practice caching policy to always revoke them.
+
+    ## Remediations
+
+    - **Do** ensure JWTs are short-lived by implementing a method to revoke them. This reduces the risk of unauthorized access to sensitive information.
+      ```javascript
+      expressjwt({
+        ...
+        isRevoked: this.customRevokeCall(),
+        ...
+      })
+      ```
+
+    ## References
+
+    - [ExpressJWT documentation on revoking tokens](https://github.com/auth0/express-jwt#revoked-tokens)
+  cwe_id:
+    - 693
+  id: "javascript_express_jwt_not_revoked"
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_express_jwt_not_revoked

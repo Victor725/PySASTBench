@@ -1,0 +1,59 @@
+imports:
+  - ruby_shared_common_datatype
+patterns:
+  - pattern: |
+      Bugsnag.leave_breadcrumb($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      Bugsnag.notify($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: $<EVENT>.add_metadata($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: EVENT
+        detection: ruby_third_parties_bugsnag_event
+        scope: cursor
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+auxiliary:
+  - id: ruby_third_parties_bugsnag_event
+    patterns:
+      - |
+        Bugsnag.notify($<_>) { |$<!>$<_:identifier>| }
+      - |
+        class $<_>
+          before_bugsnag_notify($<METHOD_NAME:simple_symbol>)
+
+          def $<METHOD_NAME>($<!>$<_:identifier>)
+          end
+        end
+languages:
+  - ruby
+skip_data_types:
+  - "Unique Identifier"
+metadata:
+  description: "Leakage of sensitive data to Bugsnag"
+  remediation_message: |
+    ## Description
+
+    Leaking sensitive data to third-party loggers like Bugsnag is a common cause of data leaks and can lead to data breaches.
+
+    ## Remediations
+
+    - **Do** ensure all sensitive data is removed when sending data to third-party loggers like Bugsnag.
+
+    ## References
+    - [Bugsnag Docs](https://docs.bugsnag.com/platforms/ruby/rails/)
+  cwe_id:
+    - 201
+  associated_recipe: Bugsnag
+  id: ruby_third_parties_bugsnag
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_third_parties_bugsnag
+  cloud_code_suggestions: true
+severity: medium

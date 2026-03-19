@@ -1,0 +1,37 @@
+patterns:
+  - MODE_WORLD_READABLE;
+  - Context.MODE_WORLD_READABLE;
+  - MODE_WORLD_WRITEABLE;
+  - Context.MODE_WORLD_WRITEABLE;
+languages:
+  - java
+metadata:
+  description: Permissive context mode for resources
+  remediation_message: |-
+    ## Description
+
+    Using permissive context modes like `Context.MODE_WORLD_READABLE` and `Context.MODE_WORLD_WRITEABLE` for file permissions exposes your application to significant security risks. These modes allow any application to read and write to your files, respectively. In light of these risks, these constants have been deprecated and removed from newer Android versions.
+
+    ## Remediations
+
+    - **Do** use `Context.MODE_PRIVATE` for file permissions to ensure that your files are accessible only by your application.
+      ```java
+      getSharedPreferences("MyPreferences", Context.MODE_PRIVATE);
+      ```
+    - **Do** utilize a `ContentProvider` if you need to share data with other applications securely. This approach provides a granular control over who can access your data.
+      ```java
+      public class MyContentProvider extends ContentProvider {
+          // Implement content provider methods here
+      }
+      ```
+    - **Do not** use `MODE_WORLD_READABLE` or `MODE_WORLD_WRITEABLE` constants, even in legacy applications. Instead, update your application to use more secure alternatives.
+
+    ## References
+
+    - [Android Context.MODE_PRIVATE reference](https://developer.android.com/reference/android/content/Context#MODE_PRIVATE)
+    - [Android Content Provider reference](https://developer.android.com/reference/android/content/ContentProvider)
+  cwe_id:
+    - 732
+  id: java_android_world_readable_writable_mode
+  documentation_url: https://docs.bearer.com/reference/rules/java_android_world_readable_writable_mode
+severity: high

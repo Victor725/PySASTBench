@@ -1,0 +1,35 @@
+patterns:
+  - pattern: |
+      session($<!>$<HASH_CONTENT>)
+    filters:
+      - not:
+          variable: HASH_CONTENT
+          detection: express_default_session_config_name_attribute
+          scope: cursor
+languages:
+  - javascript
+auxiliary:
+  - id: express_default_session_config_name_attribute
+    patterns:
+      - |
+        { name: $<_> }
+severity: medium
+metadata:
+  description: Usage of default session cookie configuration
+  remediation_message: |-
+    ## Description
+
+    Using default session cookie configurations can expose your application to security vulnerabilities. This vulnerability arises when session cookie are set with their default values, making them predictable and easier to exploit.
+
+    ## Remediations
+
+    - **Do not** rely on the default session cookie names and values provided by your framework. These defaults can be easily guessed by attackers, increasing the risk of session hijacking.
+    - **Do** use generic, non-descriptive names for session cookies. This makes it harder for attackers to identify and exploit the session management mechanism of your application.
+
+    ## References
+
+    - [Express Security Best Practices](https://expressjs.com/en/advanced/best-practice-security.html#use-cookies-securely)
+  cwe_id:
+    - 693
+  id: javascript_express_default_session_config
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_express_default_session_config

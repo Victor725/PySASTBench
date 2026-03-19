@@ -1,0 +1,238 @@
+languages:
+  - ruby
+imports:
+  - ruby_shared_common_insecure_url
+  - ruby_shared_common_datatype
+patterns:
+  - pattern: |
+      Net::HTTP.$<METHOD>($<INSECURE_URL>$<...>)
+    filters:
+      - variable: METHOD
+        values:
+          - post
+          - post_form
+      - variable: INSECURE_URL
+        detection: ruby_shared_common_insecure_url
+        scope: result
+  - pattern: |
+      Net::HTTP.$<METHOD>($<...>$<INSECURE_URL>$<...>)$<...>
+    filters:
+      - variable: METHOD
+        values:
+          - get
+          - get_print
+          - get_response
+          - new
+          - newobj
+          - start
+      - variable: INSECURE_URL
+        detection: ruby_shared_common_insecure_url
+        scope: result
+  - pattern: |
+      Net::HTTP::$<CLASS>.new($<INSECURE_URL>$<...>)
+    filters:
+      - variable: CLASS
+        values:
+          - Get
+          - Head
+          - Post
+          - Put
+          - Delete
+          - Options
+          - Trace
+          - Patch
+          - Propfind
+          - Proppatch
+          - Mkcol
+          - Copy
+          - Move
+          - Lock
+          - Unlock
+      - variable: INSECURE_URL
+        detection: ruby_shared_common_insecure_url
+        scope: result
+  - pattern: |
+      URI($<INSECURE_URL>)
+    filters:
+      - variable: INSECURE_URL
+        detection: ruby_shared_common_insecure_url
+        scope: result
+  - pattern: |
+      Curl.http($<_>, $<INSECURE_URL>$<...>)$<...>
+    filters:
+      - variable: INSECURE_URL
+        detection: ruby_shared_common_insecure_url
+        scope: result
+  - pattern: |
+      Curl.$<METHOD>($<INSECURE_URL>$<...>)$<...>
+    filters:
+      - variable: METHOD
+        values:
+          - get
+          - post
+          - put
+          - delete
+          - patch
+          - head
+          - options
+      - variable: INSECURE_URL
+        detection: ruby_shared_common_insecure_url
+        scope: result
+  - pattern: |
+      Curl::Easy.$<METHOD>($<INSECURE_URL>$<...>)$<...>
+    filters:
+      - variable: METHOD
+        values:
+          - new
+          - perform
+          - download
+          - http_delete
+          - http_post
+          - http_put
+          - http_head
+          - http_get
+      - variable: INSECURE_URL
+        detection: ruby_shared_common_insecure_url
+        scope: result
+  - pattern: |
+      $<CURB>.url = $<INSECURE_URL>
+    filters:
+      - variable: CURB
+        detection: ruby_lang_http_insecure_curb
+        scope: cursor
+      - variable: INSECURE_URL
+        detection: ruby_shared_common_insecure_url
+        scope: result
+  - pattern: |
+      Curl::Multi.$<METHOD>($<INSECURE_URL>$<...>)$<...>
+    filters:
+      - variable: METHOD
+        values:
+          - get
+          - download
+      - variable: INSECURE_URL
+        detection: ruby_shared_common_insecure_url
+        scope: result
+  - pattern: |
+      Curl::Multi.$<METHOD>($<INSECURE_URL_HASH>$<...>)$<...>
+    filters:
+      - variable: METHOD
+        values:
+          - http
+          - post
+          - put
+      - variable: INSECURE_URL_HASH
+        detection: ruby_lang_http_insecure_url_hash
+        scope: result
+  - pattern: |
+      Excon.$<METHOD>($<INSECURE_URL>$<...>)
+    filters:
+      - variable: METHOD
+        values:
+          - new
+          - connect
+          - delete
+          - get
+          - head
+          - options
+          - patch
+          - post
+          - put
+          - trace
+      - variable: INSECURE_URL
+        detection: ruby_shared_common_insecure_url
+        scope: result
+  - pattern: |
+      $<CLIENT>.get($<INSECURE_URL>$<...>)$<...>
+    filters:
+      - variable: CLIENT
+        values:
+          - Faraday
+          - HTTP
+          - HTTParty
+          - HTTPX
+          - RestClient
+          - Typhoeus
+      - variable: INSECURE_URL
+        detection: ruby_shared_common_insecure_url
+        scope: result
+  - pattern: |
+      $<CLIENT>.post($<INSECURE_URL>$<...>)$<...>
+    filters:
+      - variable: CLIENT
+        values:
+          - Faraday
+          - HTTP
+          - HTTParty
+          - HTTPX
+          - RestClient
+          - Typhoeus
+      - variable: INSECURE_URL
+        detection: ruby_shared_common_insecure_url
+        scope: result
+  - pattern: |
+      Net::HTTP.post_form($<INSECURE_URL>, $<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: INSECURE_URL
+        detection: ruby_shared_common_insecure_url
+        scope: result
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      $<CLIENT>.post($<INSECURE_URL>, $<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: CLIENT
+        values:
+          - Curl
+          - Excon
+          - Faraday
+          - HTTP
+          - HTTParty
+          - HTTPX
+          - RestClient
+          - Typhoeus
+      - variable: INSECURE_URL
+        detection: ruby_shared_common_insecure_url
+        scope: result
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+auxiliary:
+  - id: ruby_lang_http_insecure_curb
+    patterns:
+      - |
+        Curl::Easy.new$<...>
+  - id: ruby_lang_http_insecure_url_hash
+    patterns:
+      - pattern: |
+          { url: $<INSECURE_URL> }
+        filters:
+          - variable: INSECURE_URL
+            detection: ruby_shared_common_insecure_url
+severity: critical
+metadata:
+  description: "Usage of insecure HTTP connection"
+  remediation_message: |-
+    ## Description
+
+    Your application is at risk when it connects to APIs using insecure HTTP connections. This vulnerability occurs because HTTP does not encrypt data, making it susceptible to interception and alteration. Ensure that your application uses HTTPS, which encrypts data in transit, for all connections.
+
+    ## Remediations
+
+    - **Do not** use unsecured HTTP connections for outgoing communications, particularly when making API calls.
+      ```ruby
+      response = HTTParty.get('http://insecure-api.com') # unsafe
+      ```
+    - **Do** ensure all connections are made through HTTPS to protect data in transit with encryption.
+      ```ruby
+      response = HTTParty.get('https://secure-api.com')
+      ```
+
+    ## References
+
+    - [OWASP insecure transport](https://owasp.org/www-community/vulnerabilities/Insecure_Transport)
+  cwe_id:
+    - 319
+  id: ruby_lang_http_insecure
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_lang_http_insecure

@@ -1,0 +1,55 @@
+imports:
+  - ruby_shared_lang_rc4_init
+  - ruby_shared_common_datatype
+patterns:
+  - pattern: |
+      $<VAR>.$<METHOD>($<OPTIONAL_DATA_TYPE>)
+    filters:
+      - variable: VAR
+        detection: ruby_shared_lang_rc4_init
+        scope: cursor
+      - variable: METHOD
+        values:
+          - encrypt
+          - encrypt!
+          - decrypt
+      - either:
+          - variable: OPTIONAL_DATA_TYPE
+            detection: ruby_shared_common_datatype
+            scope: result
+          - not:
+              variable: OPTIONAL_DATA_TYPE
+              detection: ruby_shared_common_datatype
+              scope: result
+languages:
+  - ruby
+skip_data_types:
+  - "Unique Identifier"
+  - Passwords # see ruby_lang_weak_password_encryption_rc4
+metadata:
+  description: "Usage of weak encryption algorithm (RC4)"
+  remediation_message: |-
+    ## Description
+
+    Using the RC4 encryption algorithm exposes your data to security risks. RC4 is outdated and has known vulnerabilities that can lead to data breaches.
+
+    ## Remediations
+
+    - **Do not** use RC4 for encrypting data. Its vulnerabilities make it an insecure option for protecting sensitive information.
+      ```ruby
+      RC4.new("weak password encryption") # unsafe
+      ```
+    - **Do** use stronger, more secure encryption algorithms like bcrypt for handling sensitive data securely.
+      ```ruby
+      BCrypt::Password.create('iLOVEdogs123')
+      ```
+
+    ## References
+
+    - [BCrypt Explained](https://dev.to/sylviapap/bcrypt-explained-4k5c)
+  cwe_id:
+    - 327
+  id: ruby_lang_weak_encryption_rc4
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_lang_weak_encryption_rc4
+  cloud_code_suggestions: true
+severity: high

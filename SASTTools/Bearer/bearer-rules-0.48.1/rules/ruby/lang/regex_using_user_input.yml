@@ -1,0 +1,59 @@
+imports:
+  - ruby_shared_common_user_input
+patterns:
+  - pattern: |
+      /$<...>#{$<USER_INPUT>}$<...>/
+    filters:
+      - either:
+          - variable: USER_INPUT
+            detection: ruby_shared_common_user_input
+            scope: result
+          - variable: USER_INPUT
+            detection: ruby_shared_common_user_input
+  - pattern: |
+      %r{$<...>#{$<USER_INPUT>}$<...>}
+    filters:
+      - either:
+          - variable: USER_INPUT
+            detection: ruby_shared_common_user_input
+            scope: result
+          - variable: USER_INPUT
+            detection: ruby_shared_common_user_input
+  - pattern: |
+      Regexp.$<METHOD>($<USER_INPUT>$<...>)
+    filters:
+      - variable: METHOD
+        values:
+          - new
+          - compile
+      - either:
+          - variable: USER_INPUT
+            detection: ruby_shared_common_user_input
+            scope: result
+          - variable: USER_INPUT
+            detection: ruby_shared_common_user_input
+languages:
+  - ruby
+metadata:
+  description: "Unsanitized user input in regular expression"
+  remediation_message: |-
+    ## Description
+
+    Creating regular expressions from user input can lead to a vulnerability known as Regular Expression Denial of Service (ReDoS). This issue arises because some regular expressions can be processed with exponential time complexity. When attackers exploit this, it can significantly drain CPU resources, effectively causing a denial of service.
+
+    ## Remediations
+
+    - **Do not** construct regular expressions directly from user inputs. This can make your application susceptible to ReDoS attacks.
+    - **Do** set a timeout for regular expressions to prevent excessive CPU usage. This can help mitigate the impact of potential ReDoS attacks.
+      ```ruby
+      Regexp.new(/(a|b)/, timeout: 3)
+      ```
+
+    ## References
+
+    - [OWASP ReDoS attacks explained](https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS)
+  cwe_id:
+    - 1287
+  id: ruby_lang_regex_using_user_input
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_lang_regex_using_user_input
+severity: medium

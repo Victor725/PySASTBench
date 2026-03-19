@@ -1,0 +1,94 @@
+imports:
+  - javascript_shared_third_parties_cryptojs_init
+  - javascript_shared_lang_crypto_init
+  - javascript_shared_common_datatype
+patterns:
+  - pattern: |
+      $<VAR>.update($<OPTIONAL_DATA_TYPE>)
+    filters:
+      - variable: VAR
+        detection: create_sha_hash
+        scope: cursor
+      - either:
+          - variable: OPTIONAL_DATA_TYPE
+            detection: javascript_shared_common_datatype
+            scope: result
+          - not:
+              variable: OPTIONAL_DATA_TYPE
+              detection: javascript_shared_common_datatype
+              scope: result
+  - pattern: |
+      $<CRYPTOJS_INIT>.SHA1($<OPTIONAL_DATA_TYPE>)
+    filters:
+      - variable: CRYPTOJS_INIT
+        detection: javascript_shared_third_parties_cryptojs_init
+        scope: cursor
+      - either:
+          - variable: OPTIONAL_DATA_TYPE
+            detection: javascript_shared_common_datatype
+            scope: result
+          - not:
+              variable: OPTIONAL_DATA_TYPE
+              detection: javascript_shared_common_datatype
+              scope: result
+  - pattern: |
+      $<CRYPTOJS_INIT>.HmacSHA1($<OPTIONAL_DATA_TYPE>, $<_>)
+    filters:
+      - variable: CRYPTOJS_INIT
+        detection: javascript_shared_third_parties_cryptojs_init
+        scope: cursor
+      - either:
+          - variable: OPTIONAL_DATA_TYPE
+            detection: javascript_shared_common_datatype
+            scope: result
+          - not:
+              variable: OPTIONAL_DATA_TYPE
+              detection: javascript_shared_common_datatype
+              scope: result
+languages:
+  - javascript
+auxiliary:
+  - id: create_sha_hash
+    patterns:
+      - pattern: |
+          $<CRYPTO_INIT>.$<METHOD>($<ALGORITHM>$<...>)
+        filters:
+          - variable: CRYPTO_INIT
+            detection: javascript_shared_lang_crypto_init
+            scope: cursor
+          - variable: METHOD
+            values:
+              - createHmac
+              - createHash
+          - variable: ALGORITHM
+            string_regex: \Asha1\z
+skip_data_types:
+  - "Unique Identifier"
+  - "Passwords" # see javascript_weak_password_encryption
+metadata:
+  description: "Usage of weak hashing library (SHA-1)"
+  remediation_message: |-
+    ## Description
+
+    Using a weak hashing library like SHA-1 increases the risk of data breaches. SHA-1 in particular is vulnerable to collision attacks, where two different inputs can produce the same hash value, compromising data integrity and security.
+
+    ## Remediations
+
+    - **Do not** use SHA-1 for hashing. It's no longer considered secure against well-funded attackers.
+      ```javascript
+      const hash = crypto.createHmac("sha1", key).update(user.password); // unsafe
+      ```
+    - **Do** use stronger hashing algorithms like SHA-256 or SHA-3 for enhanced security.
+      ```javascript
+      const hash = crypto.createHmac("sha256", key).update(user.password);
+      ```
+
+    ## References
+
+    - [NodeJS Crypto Module](https://nodejs.org/api/crypto.html)
+  cwe_id:
+    - 328
+  id: javascript_lang_weak_hash_sha1
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_lang_weak_hash_sha1
+  cloud_code_suggestions: true
+severity: medium

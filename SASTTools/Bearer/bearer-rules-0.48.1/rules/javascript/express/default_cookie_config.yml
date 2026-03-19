@@ -1,0 +1,119 @@
+patterns:
+  - pattern: |
+      {
+        cookie: $<!>$<HASH_CONTENT>
+      }
+    filters:
+      - variable: HASH_CONTENT
+        detection: javascript_express_default_cookie_config_hash_val
+        scope: cursor
+      - either:
+          - not:
+              variable: HASH_CONTENT
+              detection: javascript_express_default_cookie_config_name_attribute
+              scope: cursor
+          - not:
+              variable: HASH_CONTENT
+              detection: javascript_express_default_cookie_config_expiry_attribute
+              scope: cursor
+          - not:
+              variable: HASH_CONTENT
+              detection: javascript_express_default_cookie_config_path_attribute
+              scope: cursor
+          - not:
+              variable: HASH_CONTENT
+              detection: javascript_express_default_cookie_config_domain_attribute
+              scope: cursor
+          - not:
+              variable: HASH_CONTENT
+              detection: javascript_express_default_cookie_config_secure_attribute
+              scope: cursor
+          - not:
+              variable: HASH_CONTENT
+              detection: javascript_express_default_cookie_config_httponly_attribute
+              scope: cursor
+  - pattern: |
+      cookieSession($<!>$<HASH_CONTENT>)
+    filters:
+      - variable: HASH_CONTENT
+        detection: javascript_express_default_cookie_config_hash_val
+      - either:
+          - not:
+              variable: HASH_CONTENT
+              detection: javascript_express_default_cookie_config_name_attribute
+              scope: cursor
+          - not:
+              variable: HASH_CONTENT
+              detection: javascript_express_default_cookie_config_expiry_attribute
+              scope: cursor
+          - not:
+              variable: HASH_CONTENT
+              detection: javascript_express_default_cookie_config_path_attribute
+              scope: cursor
+          - not:
+              variable: HASH_CONTENT
+              detection: javascript_express_default_cookie_config_domain_attribute
+              scope: cursor
+          - not:
+              variable: HASH_CONTENT
+              detection: javascript_express_default_cookie_config_secure_attribute
+              scope: cursor
+          - not:
+              variable: HASH_CONTENT
+              detection: javascript_express_default_cookie_config_httponly_attribute
+              scope: cursor
+languages:
+  - javascript
+auxiliary:
+  - id: javascript_express_default_cookie_config_hash_val
+    patterns:
+      - |
+        {}
+  - id: javascript_express_default_cookie_config_name_attribute
+    patterns:
+      - |
+        { name: $<_> }
+  - id: javascript_express_default_cookie_config_expiry_attribute
+    patterns:
+      - |
+        { maxAge: $<_> }
+      - |
+        { expires: $<_> }
+  - id: javascript_express_default_cookie_config_path_attribute
+    patterns:
+      - |
+        { path: $<_> }
+  - id: javascript_express_default_cookie_config_domain_attribute
+    patterns:
+      - |
+        { domain: $<_> }
+  - id: javascript_express_default_cookie_config_secure_attribute
+    patterns:
+      - |
+        { secure: $<_> }
+  - id: javascript_express_default_cookie_config_httponly_attribute
+    patterns:
+      - |
+        { httpOnly: $<_> }
+severity: medium
+metadata:
+  description: Usage of default cookie configuration
+  remediation_message: |-
+    ## Description
+
+    Using default cookie configurations can expose your application to security risks. This vulnerability arises when cookies are set with their default values, making them predictable and easier to exploit.
+
+    ## Remediations
+
+    - **Do not** rely on default cookie names.
+    - **Do** use generic, non-descriptive names for session cookies. This makes it harder for attackers to identify and exploit the session management mechanism of your application.
+    - **Do** always specify a `maxAge` or `expires` value to control cookie lifetime.
+
+    ## References
+
+    - [Express Security Best Practices](https://expressjs.com/en/advanced/best-practice-security.html#use-cookies-securely)
+  cwe_id:
+    - 693
+  id: javascript_express_default_cookie_config
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_express_default_cookie_config
+  cloud_code_suggestions: true

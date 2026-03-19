@@ -1,0 +1,53 @@
+patterns:
+  - pattern: |
+      {
+        $<SESSION>
+        $<!>$<STATIC>
+      }
+    filters:
+      - variable: SESSION
+        detection: javascript_express_static_asset_with_session_session
+      - variable: STATIC
+        detection: javascript_express_static_asset_with_session_static
+auxiliary:
+  - id: javascript_express_static_asset_with_session_session
+    patterns:
+      - pattern: app.use($<SESSION_MIDDLEWARE>)
+        filters:
+          - variable: SESSION_MIDDLEWARE
+            detection: javascript_express_static_asset_with_session_session_init
+            scope: result
+  - id: javascript_express_static_asset_with_session_session_init
+    patterns:
+      - session()
+  - id: javascript_express_static_asset_with_session_static
+    patterns:
+      - pattern: app.use($<STATIC_MIDDLEWARE>)
+        filters:
+          - variable: STATIC_MIDDLEWARE
+            detection: javascript_express_static_asset_with_session_static_init
+            scope: result
+  - id: javascript_express_static_asset_with_session_static_init
+    patterns:
+      - express.static()
+languages:
+  - javascript
+metadata:
+  description: Usage of session on static asset (CSRF)
+  remediation_message: |-
+    ## Description
+
+    Enabling sessions for static assets can inadvertently expose your application to Cross-Site Request Forgery (CSRF) attacks. This vulnerability arises because static assets, like images and stylesheets, are often cached by intermediary services such as Content Delivery Networks (CDNs). If these assets are served with session information, attackers can exploit this to hijack a user's session.
+
+    ## Remediations
+
+    - **Do** ensure that static resources are served prior to session initialization in your application's middleware order. This practice prevents session cookies from being unnecessarily attached to static assets, reducing the risk of CSRF attacks.
+      ```javascript
+      app.use(express.static(__dirname + "/public"));
+      app.use(session());
+      ```
+  cwe_id:
+    - 352
+  id: javascript_express_static_asset_with_session
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_express_static_asset_with_session
+severity: medium

@@ -1,0 +1,36 @@
+patterns:
+  - pattern: $<PACKAGE>.Listen($<...>$<ADDR>)
+    filters:
+      - variable: PACKAGE
+        values:
+          - net
+          - tls
+      - variable: ADDR
+        regex: 0\.0\.0\.0:[0-9]+
+languages:
+  - go
+metadata:
+  description: "Permissive server network interface configuration"
+  remediation_message: |-
+    ## Description
+
+    Binding a service to "0.0.0.0" makes it accessible on all network interfaces. This configuration can lead to unintended exposure over insecure or unintended network interfaces, creating potential security risks.
+
+    ## Remediations
+
+    - **Do not** bind services to "0.0.0.0" without considering the security implications. This default setting can expose your service on all network interfaces, including those that are not secure.
+    - **Do** bind your service to a specific IP address or network interface to limit access and enhance security. This can be achieved through various methods:
+        - Specify the IP address using an environment variable for flexible and secure configuration.
+        - Define the IP address in a configuration file that the application reads at startup.
+        - Dynamically identify the appropriate network interface and bind the service to its IP address.
+    - **Do** implement security best practices when configuring network services. Use firewalls to control access and encrypt communication with TLS to protect data in transit.
+
+    ## References
+
+    - [Go net package](https://pkg.go.dev/net)
+    - [Go os package for environment variables](https://pkg.go.dev/os)
+  cwe_id:
+    - 200
+  id: go_gosec_network_bind_to_all_interfaces
+  documentation_url: https://docs.bearer.com/reference/rules/go_gosec_network_bind_to_all_interfaces
+severity: medium

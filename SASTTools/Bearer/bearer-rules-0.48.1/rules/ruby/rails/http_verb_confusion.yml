@@ -1,0 +1,33 @@
+languages:
+  - ruby
+patterns:
+  - pattern: |
+      if request.get?
+      else
+      end
+  - pattern: |
+      unless request.get?
+      end
+  - pattern: |
+      $<_> unless request.get?
+severity: medium
+metadata:
+  description: "Possible HTTP verb confusion"
+  remediation_message: |-
+    ## Description
+
+    In Rails applications, the same actions are often used to respond to both GET and HEAD requests. This can become problematic when actions are designed to handle both GET requests, which should not alter the application state, and requests like POST, which may alter state. Relying on `request.get?` to differentiate request types can inadvertently lead to unexpected changes in the application state.
+
+    ## Remediations
+
+    - **Do** use separate action logic for handling GET and POST requests to prevent unintended state changes.
+    - **Do** explicitly check for state-altering HTTP verbs (such as POST) instead of relying on GET to ensure that state changes only occur when intended.
+      ```ruby
+      if request.post?
+        alter_state
+      end
+      ```
+  cwe_id:
+    - 650
+  id: ruby_rails_http_verb_confusion
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_rails_http_verb_confusion

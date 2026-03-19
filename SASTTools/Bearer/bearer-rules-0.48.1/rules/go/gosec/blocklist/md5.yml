@@ -1,0 +1,31 @@
+patterns:
+  - pattern: |
+      import $<!>"crypto/md5"
+  - pattern: |
+      import (
+        $<!>"crypto/md5"
+      )
+languages:
+  - go
+metadata:
+  description: "Import of weak hashing library (MD5)"
+  remediation_message: |-
+    ## Description
+
+    Using a weak hashing library like MD5 increases the risk of data breaches. MD5 is vulnerable to collision attacks, where two different inputs produce the same output, compromising data integrity and security.
+
+    ## Remediations
+
+    - **Do not** use MD5 for hashing. It is considered a weak hash algorithm and can compromise data security.
+    - **Do** use stronger hashing algorithms such as SHA-3 or BLAKE2 for general hashing purposes, such as file integrity checks or generating unique identifiers.
+    - **Do** use recommended algorithms such as bcrypt or Argon2id for password hashing, as these are designed to be slower and therefore more effective against brute-force attacks.
+
+    ## References
+
+    - [OWASP Password Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
+
+  cwe_id:
+    - 328
+  id: go_gosec_blocklist_md5
+  documentation_url: https://docs.bearer.com/reference/rules/go_gosec_blocklist_md5
+severity: medium

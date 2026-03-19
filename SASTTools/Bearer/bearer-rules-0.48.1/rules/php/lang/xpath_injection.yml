@@ -1,0 +1,65 @@
+imports:
+  - php_shared_lang_user_input
+  - php_shared_lang_instance
+patterns:
+  - pattern: $<XPATH>->$<METHOD>($<USER_INPUT>$<...>)
+    filters:
+      - variable: XPATH
+        detection: php_shared_lang_instance
+        scope: cursor
+        filters:
+          - variable: CLASS
+            values:
+              - DOMXPath
+      - variable: METHOD
+        values:
+          - evaluate
+          - query
+      - variable: USER_INPUT
+        detection: php_shared_lang_user_input
+        scope: result
+  - pattern: $<SIMPLE_XML>->xpath($<USER_INPUT>)
+    filters:
+      - variable: SIMPLE_XML
+        detection: php_lang_xpath_injection_simple_xml
+        scope: cursor
+      - variable: USER_INPUT
+        detection: php_shared_lang_user_input
+        scope: result
+auxiliary:
+  - id: php_lang_xpath_injection_simple_xml
+    patterns:
+      - pattern: $<INSTANCE>;
+        filters:
+          - variable: INSTANCE
+            detection: php_shared_lang_instance
+            scope: cursor_strict
+            filters:
+              - variable: CLASS
+                values:
+                  - SimpleXMLElement
+      - simplexml_import_dom()
+      - simplexml_load_file()
+      - simplexml_load_string()
+languages:
+  - php
+metadata:
+  description: "Unsanitized user input in XPath"
+  remediation_message: |-
+    ## Description
+
+    Unsanitized user input in XPath expressions can result in XPath injection. This vulnerability occurs when user input is directly used in XPath queries without proper sanitation, potentially granting unauthorized access to sensitive data within XML documents.
+
+    ## Remediations
+
+    - **Do not** directly use user input in XPath expressions. This can lead to XPath injection vulnerabilities.
+    - **Do** sanitize user input before including it in XPath queries. Ensure that any data derived from user input is properly cleaned to prevent injection attacks.
+
+    ## References
+
+    - [XPath Injection](https://owasp.org/www-community/attacks/XPATH_Injection)
+  cwe_id:
+    - 643
+  id: php_lang_xpath_injection
+  documentation_url: https://docs.bearer.com/reference/rules/php_lang_xpath_injection
+severity: medium

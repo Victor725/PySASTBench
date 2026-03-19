@@ -1,0 +1,60 @@
+patterns:
+  - pattern: echo $<EXCEPTION_DETAILS>
+    filters:
+      - variable: EXCEPTION_DETAILS
+        detection: php_lang_information_leakage_exception_details
+        scope: result
+  - pattern: print $<EXCEPTION_DETAILS>;
+    filters:
+      - variable: EXCEPTION_DETAILS
+        detection: php_lang_information_leakage_exception_details
+        scope: result
+  - pattern: print_r($<EXCEPTION_DETAILS>)
+    filters:
+      - variable: EXCEPTION_DETAILS
+        detection: php_lang_information_leakage_exception_details
+        scope: result
+  - pattern: $<METHOD>($<_>, $<...>$<EXCEPTION_DETAILS>$<...>)
+    filters:
+      - variable: METHOD
+        values:
+          - printf
+          - vprintf
+      - variable: EXCEPTION_DETAILS
+        detection: php_lang_information_leakage_exception_details
+        scope: result
+auxiliary:
+  - id: php_lang_information_leakage_exception_details
+    patterns:
+      - try {} catch ($<_> $<!>$$<_>) {}
+      - pattern: $<EXCEPTION>->$<_>()
+        filters:
+          - variable: EXCEPTION
+            detection: php_lang_information_leakage_exception_details
+            scope: cursor
+languages:
+  - php
+severity: low
+metadata:
+  description: Leakage of sensitive information in exception message
+  remediation_message: |-
+    ## Description
+
+    Leakage of sensitive information in exception messages poses a significant security risk. When an exception message is printed to the default output, it might reveal sensitive details about your application's technical setup or environment. This could potentially open the door to attacks, such as path traversal. Even more concerning is the possibility of exposing user-specific data, which could lead to serious privacy breaches.
+
+    ## Remediations
+
+    - **Do not** print the full stack trace to the default output. This can inadvertently reveal sensitive information.
+      ```php
+      echo $e->getTrace(); // unsafe
+      ```
+    - **Do** log only the essential details required for error messages. This minimizes the risk of sensitive data exposure.
+
+    ## References
+
+    - [Web Application Security Consortium: Information Leakage](http://projects.webappsec.org/w/page/13246936/Information%20Leakage)
+  cwe_id:
+    - 209
+  id: php_lang_information_leakage
+  documentation_url: https://docs.bearer.com/reference/rules/php_lang_information_leakage
+  cloud_code_suggestions: true

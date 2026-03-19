@@ -1,0 +1,34 @@
+imports:
+  - php_shared_lang_user_input
+patterns:
+  - pattern: |
+      unserialize($<USER_INPUT>$<...>)
+    filters:
+      - variable: USER_INPUT
+        detection: php_shared_lang_user_input
+        scope: result
+languages:
+  - php
+severity: critical
+metadata:
+  description: "Unsanitized user input in deserialization method"
+  remediation_message: |-
+    ## Description
+
+    Deserializing data from untrusted sources, like parameters or cookies, without proper validation is a security risk. Attackers can embed malicious code or payloads in serialized data. When your application deserializes this data, it can compromise your system's security.
+
+    ## Remediations
+
+    - **Do not** deserialize data from untrusted sources directly. This prevents attackers from exploiting the deserialization process.
+    - **Do** use data formats that are purely data-oriented and not tied to a specific programming language, such as JSON or XML, for serialization and deserialization. This approach minimizes the risk of executing malicious code during deserialization.
+      ```php
+      $userData = json_decode($_GET["user"]);
+      ```
+
+    ## References
+
+    - [OWASP Deserialization cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html)
+  cwe_id:
+    - 502
+  id: php_lang_deserialization_of_user_input
+  documentation_url: https://docs.bearer.com/reference/rules/php_lang_deserialization_of_user_input

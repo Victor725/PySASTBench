@@ -1,0 +1,47 @@
+patterns:
+  - pattern: $<BLOWFISH_KEY_GEN>.init($<SIZE>);
+    filters:
+      - variable: BLOWFISH_KEY_GEN
+        detection: java_lang_blowfish_key_generator_init
+      - variable: SIZE
+        less_than: 128
+auxiliary:
+  - id: java_lang_blowfish_key_generator_init
+    patterns:
+      - pattern: $<KEY_GENERATOR>.getInstance($<BLOWFISH_ALGORITHM>$<...>);
+        filters:
+          - variable: KEY_GENERATOR
+            regex: \A(java\.crypto\.)?KeyGenerator\z
+          - variable: BLOWFISH_ALGORITHM
+            string_regex: (?i)\ABlowfish\z
+languages:
+  - java
+severity: high
+metadata:
+  description: Usage of small key size with Blowfish encryption
+  remediation_message: |-
+    ## Description
+
+    Using Blowfish encryption with a small key size (128 bytes or less) makes your data susceptible to birthday attacks. This vulnerability arises because smaller key sizes don't provide enough complexity to secure the encrypted data effectively. It is recommended to specify a larger value, such as 256, instead.
+
+    ## Remediations
+
+    - **Do** increase the key size when using Blowfish encryption. Specifically, set the key size to 256 or more using the `KeyGenerator.init(keySize)` method. This adjustment significantly improves the security of the encryption.
+      ```java
+      KeyGenerator keyGenerator = KeyGenerator.getInstance("Blowfish");
+      keyGenerator.init(256);
+      ```
+    - **Do** consider using AES for encryption instead of Blowfish. AES is a more secure and widely recommended encryption standard. You can select AES as your encryption method by initializing the KeyGenerator instance for AES.
+      ```java
+      KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+      ```
+
+    ## References
+
+    - [Java Cryptography Architecture docs](https://docs.oracle.com/en/java/javase/21/security/java-cryptography-architecture-jca-reference-guide.html)
+    - [Birthday Attack](https://en.wikipedia.org/wiki/Birthday_attack)
+  cwe_id:
+    - 326
+  id: java_lang_blowfish_key_size
+  documentation_url: https://docs.bearer.com/reference/rules/java_lang_blowfish_key_size
+  cloud_code_suggestions: true

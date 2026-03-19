@@ -1,0 +1,30 @@
+imports:
+  - java_shared_lang_datatype
+patterns:
+  - pattern: |
+      new $<COOKIE>($<...>$<DATA_TYPE>$<...>);
+    filters:
+      - variable: COOKIE
+        regex: \A(javax\.servlet\.http\.)?Cookie\z
+      - variable: DATA_TYPE
+        detection: java_shared_lang_datatype
+languages:
+  - java
+metadata:
+  description: "Leakage of sensitive data in cookie"
+  remediation_message: |-
+    ## Description
+
+    Leakage of sensitive data in cookies can lead to a data breach. This vulnerability occurs when sensitive information is stored in browser cookies, putting it at risk of unauthorized access.
+
+    ## Remediations
+
+    - **Do not** store sensitive data in unencrypted cookies. This practice can expose sensitive information to potential security threats.
+      ```java
+      Cookie cookie = new Cookie("user", user.email);
+      ```
+  cwe_id:
+    - 315
+  id: java_lang_cookie_leak
+  documentation_url: https://docs.bearer.com/reference/rules/java_lang_cookie_leak
+severity: high

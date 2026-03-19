@@ -1,0 +1,47 @@
+languages:
+  - php
+imports:
+  - php_shared_lang_http_url
+  - php_shared_lang_user_input
+patterns:
+  - pattern: $<HTTP_URL>;
+    filters:
+      - variable: HTTP_URL
+        detection: php_shared_lang_http_url
+        scope: cursor_strict
+        filters:
+          - variable: URL
+            detection: php_shared_lang_user_input
+            scope: result
+severity: high
+metadata:
+  description: "Unsanitized user input in HTTP request (SSRF)"
+  remediation_message: |-
+    ## Description
+
+    Your application is vulnerable to Server-Side Request Forgery (SSRF) attacks when it connects to URLs that include user-supplied data. This vulnerability occurs because attackers can manipulate these URLs to force your application to make unintended requests to internal or external resources.
+
+    ## Remediations
+
+    - **Do not** directly include user input in HTTP URLs. This practice can lead to SSRF vulnerabilities, where attackers exploit the application to send requests to unintended destinations.
+      ```php
+      $curl = curl_init("https://{$_GET['host']}"); // unsafe
+      ```
+    - **Do** validate or map user input against a predefined list of safe values before using it to form URLs. This approach ensures that the application only connects to intended and safe locations.
+      ```php
+      if ($_GET["host"] == "option1") {
+        $host = "api1.com";
+      } else {
+        $host = "api2.com";
+      }
+
+      $curl = curl_init("https://$host");
+      ```
+
+    ## References
+
+    - [OWASP - Server-Side Request Forgery (SSRF) prevention cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html)
+  cwe_id:
+    - 918
+  id: php_lang_http_url_using_user_input
+  documentation_url: https://docs.bearer.com/reference/rules/php_lang_http_url_using_user_input

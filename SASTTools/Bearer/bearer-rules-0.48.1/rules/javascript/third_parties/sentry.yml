@@ -1,0 +1,58 @@
+imports:
+  - javascript_shared_common_datatype
+patterns:
+  - pattern: |
+      Sentry.$<METHOD>($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: METHOD
+        values:
+          - addBreadcrumb
+          - captureMessage
+          - captureEvent
+          - captureException
+      - variable: DATA_TYPE
+        detection: javascript_shared_common_datatype
+        scope: result
+  - pattern: |
+      $<SCOPE>.$<METHOD>($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: SCOPE
+        detection: javascript_third_parties_sentry_scope
+        scope: cursor
+      - variable: METHOD
+        values:
+          - setUser
+          - setTag
+          - setExtra
+      - variable: DATA_TYPE
+        detection: javascript_shared_common_datatype
+        scope: result
+auxiliary:
+  - id: javascript_third_parties_sentry_scope
+    patterns:
+      - |
+        Sentry.configureScope(($<!>$<_>) => {})
+languages:
+  - javascript
+skip_data_types:
+  - "Unique Identifier"
+metadata:
+  description: "Leakage of sensitive data to Sentry"
+  remediation_message: |
+    ## Description
+
+    Leaking sensitive data to third-party loggers like Sentry is a common cause of data leaks and can lead to data breaches.
+
+    ## Remediations
+
+    - **Do** ensure all sensitive data is removed when sending data to third-party loggers like Sentry.
+
+    ## References
+    - [Sentry Docs](https://docs.sentry.io/)
+  cwe_id:
+    - 201
+  associated_recipe: Sentry
+  id: javascript_third_parties_sentry
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_third_parties_sentry
+  cloud_code_suggestions: true
+severity: medium

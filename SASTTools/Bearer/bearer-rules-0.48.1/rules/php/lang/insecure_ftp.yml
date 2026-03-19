@@ -1,0 +1,26 @@
+patterns:
+  - ftp_connect()
+languages:
+  - php
+severity: critical
+metadata:
+  description: "Usage of insecure FTP connection"
+  remediation_message: |-
+    ## Description
+
+    Using insecure FTP connections can compromise the security of sensitive data. This vulnerability arises when applications that handle sensitive information communicate with FTP servers without secure protocols. Always verify that FTP connections in your application utilize SFTP for enhanced security.
+
+    ## Remediations
+
+    - **Do** use the `ftp_ssl_connect` function to establish secure FTP connections. This function ensures that your connection to the FTP server is encrypted, protecting the data transmitted from potential interception or eavesdropping.
+      ```php
+      $ftp = ftp_ssl_connect("ftp.example.com");
+      ```
+
+    ## References
+
+    - [OWASP insecure transport](https://owasp.org/www-community/vulnerabilities/Insecure_Transport)
+  cwe_id:
+    - 319
+  id: php_lang_insecure_ftp
+  documentation_url: https://docs.bearer.com/reference/rules/php_lang_insecure_ftp

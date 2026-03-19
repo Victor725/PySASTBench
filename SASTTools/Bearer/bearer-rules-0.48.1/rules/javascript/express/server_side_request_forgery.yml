@@ -1,0 +1,88 @@
+imports:
+  - javascript_shared_common_user_input
+patterns:
+  - pattern: |
+      fetch($<USER_INPUT>)
+    filters:
+      - variable: USER_INPUT
+        detection: javascript_shared_common_user_input
+        scope: result
+  - pattern: |
+      axios.get($<USER_INPUT>)
+    filters:
+      - variable: USER_INPUT
+        detection: javascript_shared_common_user_input
+        scope: result
+  - pattern: |
+      $<PUPPETEER_PAGE>.$<METHOD>($<USER_INPUT>)
+    filters:
+      - variable: PUPPETEER_PAGE
+        detection: javascript_puppeteer_page
+        scope: cursor
+      - variable: METHOD
+        values:
+          - goto
+          - setContent
+          - evaluate
+          - evaluateOnNewDocument
+      - variable: USER_INPUT
+        detection: javascript_shared_common_user_input
+        scope: result
+auxiliary:
+  - id: javascript_puppeteer_page
+    patterns:
+      - pattern: await $<PAGE_PROMISE>
+        filters:
+          - variable: PAGE_PROMISE
+            detection: javascript_puppeteer_page_promise
+            scope: cursor
+  - id: javascript_puppeteer_page_promise
+    patterns:
+      - $<BROWSER>.newPage()
+    filters:
+      - variable: BROWSER
+        detection: javascript_puppeteer_browser
+        scope: cursor
+  - id: javascript_puppeteer_browser
+    patterns:
+      - pattern: await $<BROWSER_PROMISE>
+        filters:
+          - variable: BROWSER_PROMISE
+            detection: javascript_puppeteer_browser_promise
+            scope: cursor
+  - id: javascript_puppeteer_browser_promise
+    patterns:
+      - puppeteer.launch()
+languages:
+  - javascript
+severity: high
+metadata:
+  description: "Unsanitized user input in HTTP request (SSRF)"
+  remediation_message: |-
+    ## Description
+
+    Incorporating unsanitized user input directly into URLs for data retrieval exposes your application to server-side request forgery (SSRF) attacks. This vulnerability arises when URLs include data provided by users without adequate validation or sanitization.
+
+    ## Remediations
+
+    - **Do not** directly use user input to construct URLs for backend requests. This approach can lead to SSRF vulnerabilities.
+      ```javascript
+      axios.get(`https://${req.params.host}`); // unsafe
+      ```
+    - **Do** validate or sanitize user input before using it in URLs. Prefer using a predefined list of allowed hosts and map user input to this list, ensuring only safe and expected URLs are constructed.
+      ```javascript
+      var host = "default-api.com"
+      if (req.params.host == "something-else") {
+        host = "other-api.com";
+      }
+
+      axios.get(`https://${host}`);
+      ```
+
+    ## References
+
+    - [OWASP - Server-Side Request Forgery (SSRF) prevention cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html)
+  cwe_id:
+    - 918
+  id: "javascript_express_server_side_request_forgery"
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_express_server_side_request_forgery

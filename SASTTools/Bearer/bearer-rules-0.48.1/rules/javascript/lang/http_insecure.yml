@@ -1,0 +1,99 @@
+imports:
+  - javascript_shared_common_insecure_url
+patterns:
+  - pattern: |
+      $<LIBRARY>.$<METHOD>($<INSECURE_URL>$<...>)
+    filters:
+      - variable: INSECURE_URL
+        detection: javascript_shared_common_insecure_url
+        scope: result
+      - variable: LIBRARY
+        values:
+          - axios
+          - http
+      - variable: METHOD
+        values:
+          - get
+          - post
+          - patch
+          - delete
+  - pattern: |
+      axios($<INSECURE_CONFIG>)
+    filters:
+      - variable: INSECURE_CONFIG
+        detection: javascript_lang_http_insecure_axios_object
+  - pattern: |
+      fetch($<INSECURE_URL>$<...>)
+    filters:
+      - variable: INSECURE_URL
+        detection: javascript_shared_common_insecure_url
+        scope: result
+  - pattern: |
+      $<XML_HTTP>.open($<_>, $<INSECURE_URL>$<...>)
+    filters:
+      - variable: XML_HTTP
+        detection: javascript_lang_http_insecure_xmlhttp
+      - variable: INSECURE_URL
+        detection: javascript_shared_common_insecure_url
+        scope: result
+  - pattern: |
+      request($<INSECURE_URL>$<...>)
+    filters:
+      - variable: INSECURE_URL
+        detection: javascript_shared_common_insecure_url
+        scope: result
+  - pattern: |
+      request.$<METHOD>($<INSECURE_URL>$<...>)
+    filters:
+      - variable: METHOD
+        values:
+          - get
+          - head
+          - options
+          - post
+          - put
+          - patch
+          - del
+      - variable: INSECURE_URL
+        detection: javascript_shared_common_insecure_url
+        scope: result
+auxiliary:
+  - id: javascript_lang_http_insecure_axios_object
+    patterns:
+      - pattern: |
+          { url: $<INSECURE_URL> }
+        filters:
+          - variable: INSECURE_URL
+            detection: javascript_shared_common_insecure_url
+            scope: result
+  - id: javascript_lang_http_insecure_xmlhttp
+    patterns:
+      - new XMLHttpRequest()
+languages:
+  - javascript
+severity: critical
+metadata:
+  description: "Usage of insecure HTTP connection"
+  remediation_message: |-
+    ## Description
+
+    Your application is at risk when it connects to APIs using insecure HTTP connections. This vulnerability occurs because HTTP does not encrypt data, making it susceptible to interception and alteration. Ensure that your application uses HTTPS, which encrypts data in transit, for all connections.
+
+    ## Remediations
+
+    - **Do not** use HTTP for outgoing connections or API calls. This practice leaves your data vulnerable to eavesdropping and tampering.
+      ```javascript
+      const response = axios.get('http://insecure-api.com') // unsafe
+      ```
+    - **Do** ensure all external connections, especially API calls, use HTTPS to protect data in transit.
+      ```javascript
+      const response = axios.get('https://secure-api.com')
+      ```
+
+    ## References
+
+    - [OWASP insecure transport](https://owasp.org/www-community/vulnerabilities/Insecure_Transport)
+  cwe_id:
+    - 319
+  id: javascript_lang_http_insecure
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_lang_http_insecure

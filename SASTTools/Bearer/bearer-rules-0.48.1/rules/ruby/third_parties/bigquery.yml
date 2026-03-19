@@ -1,0 +1,92 @@
+imports:
+  - ruby_shared_common_datatype
+patterns:
+  - pattern: |
+      $<INSERTER>.insert($<...>$<DATA_TYPE>$<...>)$<...>
+    filters:
+      - either:
+          - variable: INSERTER
+            detection: ruby_third_parties_bigquery_dataset
+            scope: cursor
+          - variable: INSERTER
+            detection: ruby_third_parties_bigquery_insert_async
+            scope: cursor
+          - variable: INSERTER
+            detection: ruby_third_parties_bigquery_table
+            scope: cursor
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+languages:
+  - ruby
+auxiliary:
+  - id: ruby_third_parties_bigquery_client
+    patterns:
+      - |
+        Google::Cloud::Bigquery.new
+      - |
+        Google::Cloud::Bigquery.new()
+  - id: ruby_third_parties_bigquery_dataset
+    patterns:
+      - pattern: |
+          $<CLIENT>.dataset()
+        filters:
+          - variable: CLIENT
+            detection: ruby_third_parties_bigquery_client
+            scope: cursor
+  - id: ruby_third_parties_bigquery_table
+    patterns:
+      - pattern: |
+          $<DATASET>.table()
+        filters:
+          - variable: DATASET
+            detection: ruby_third_parties_bigquery_dataset
+            scope: cursor
+      - pattern: |
+          $<DATASET>.create_table()$<...>
+        filters:
+          - variable: DATASET
+            detection: ruby_third_parties_bigquery_dataset
+            scope: cursor
+  - id: ruby_third_parties_bigquery_insert_async
+    patterns:
+      - pattern: |
+          $<DATASET>.insert_async()$<...>
+        filters:
+          - variable: DATASET
+            detection: ruby_third_parties_bigquery_dataset
+            scope: cursor
+      - pattern: |
+          $<TABLE>.insert_async$<...>
+        filters:
+          - variable: TABLE
+            detection: ruby_third_parties_bigquery_table
+            scope: cursor
+      - pattern: |
+          $<TABLE>.insert_async()$<...>
+        filters:
+          - variable: TABLE
+            detection: ruby_third_parties_bigquery_table
+            scope: cursor
+skip_data_types:
+  - "Unique Identifier"
+metadata:
+  description: "Leakage of sensitive data to BigQuery"
+  remediation_message: |
+    ## Description
+
+    Leaking sensitive data to third-party data tools like BigQuery is a common cause of data leaks and can lead to data breaches.
+
+    ## Remediations
+
+    - **Do** ensure all sensitive data is removed when sending data to third-party services like BigQuery.
+
+    ## References
+    - [BigQuery docs](https://cloud.google.com/ruby/docs)
+  cwe_id:
+    - 201
+  associated_recipe: Google Cloud BigQuery
+  id: ruby_third_parties_bigquery
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_third_parties_bigquery
+  cloud_code_suggestions: true
+severity: medium

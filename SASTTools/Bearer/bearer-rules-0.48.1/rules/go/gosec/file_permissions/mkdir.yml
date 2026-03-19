@@ -1,0 +1,48 @@
+patterns:
+  - pattern: |
+      os.$<METHOD>($<...>$<MASK>)
+    filters:
+      - variable: METHOD
+        values:
+          - Mkdir
+          - MkdirAll
+      - variable: MASK
+        detection: go_gosec_file_permissions_mkdir_mask
+        scope: result
+auxiliary:
+  - id: go_gosec_file_permissions_mkdir_mask
+    patterns:
+      - pattern: $<MASK>
+        filters:
+          - variable: MASK
+            regex: \A0o?77
+languages:
+  - go
+metadata:
+  description: "Permissive folder creation"
+  remediation_message: |-
+    ## Description
+
+    Incorrect directory permissions can severely compromise system security.Directories with overly permissive access rights can allow unauthorized users to manipulate files, potentially leading to malicious code execution, data breaches, or full system compromise.
+
+    ## Remediations
+
+    - **Do not** use overly broad permissions like `0777` for directories, as this allows all users to read, write, and execute files, posing a significant security risk.
+      ```go
+      os.Mkdir("example_directory", 0777) // unsafe
+      ```
+    - **Do** set directory permissions to:
+      - `0700` for private user data, granting full control to the owner only.
+      - `0750` for directories requiring group access, granting full control to the owner and read/execute to the group.
+      ```go
+      os.Mkdir("secure_directory", 0700)
+      ```
+    - **Do** verify file permissions after creation or update to ensure they are set as intended.
+    - **Do** consider setting umask to a secure default, if your application creates multiple files, to ensure that files are created with safe default permissions.
+    - **Do** regularly review and audit file permissions in your system to ensure they adhere to the principle of least privilege, minimizing the access level to what is strictly necessary for operational functionality.
+
+  cwe_id:
+    - 732
+  id: go_gosec_file_permissions_mkdir
+  documentation_url: https://docs.bearer.com/reference/rules/go_gosec_file_permissions_mkdir
+severity: high

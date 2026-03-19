@@ -1,0 +1,43 @@
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+  margin: 0 !important;
+}
+
+.header {
+  padding: 0;
+  background: #001529;
+  height: 64px;
+  line-height: 64px;
+}
+
+.logo {
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+  max-width: 1200px;
+  margin: 0 auto 0 auto;
+  padding: 0 10px 0 10px;
+}
+
+.main {
+  max-width: 1200px;
+  margin: 0 auto 0 auto;
+  padding: 0 10px 0 10px;
+}

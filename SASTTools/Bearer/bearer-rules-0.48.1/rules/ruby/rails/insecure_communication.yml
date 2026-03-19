@@ -1,0 +1,32 @@
+patterns:
+  - |
+    Rails.application.configure do
+      $<!>config.force_ssl = false
+    end
+languages:
+  - ruby
+severity: critical
+metadata:
+  description: "Missing secure HTTP server configuration"
+  remediation_message: |-
+    ## Description
+
+    Your application may be at risk if it does not enforce the use of SSL (Secure Sockets Layer) for all communications, especially when processing sensitive data. Be sure to enable force_ssl at the application level to ensure that all data transmitted is encrypted. Unencrypted HTTP communication sends all requests as plain text, meaning anyone listening in can see all the traffic and extract user data.
+
+    ## Remediations
+
+    - **Do** enforce SSL to secure all data in transit. This is crucial for protecting sensitive information from eavesdropping or interception.
+      ```ruby
+      config.force_ssl = true
+      ```
+    - **Do not** allow unencrypted HTTP traffic for your application. Unencrypted communications can be intercepted, exposing sensitive user data to attackers.
+
+    ## References
+
+    - [Configuring Rails Applications - Ruby on Rails Guides](https://guides.rubyonrails.org/configuring.html#config-force-ssl)
+    - [Session Hijacking - Ruby on Rails Guides](https://guides.rubyonrails.org/security.html#session-hijacking)
+  cwe_id:
+    - 319
+  id: ruby_rails_insecure_communication
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_rails_insecure_communication
+  cloud_code_suggestions: true

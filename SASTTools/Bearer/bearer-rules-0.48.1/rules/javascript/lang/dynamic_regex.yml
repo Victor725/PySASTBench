@@ -1,0 +1,46 @@
+imports:
+  - javascript_shared_common_dynamic_input
+patterns:
+  - pattern: |
+      new RegExp($<DYNAMIC_INPUT>$<...>)
+    filters:
+      - variable: DYNAMIC_INPUT
+        detection: javascript_lang_dynamic_regex_input
+        scope: cursor
+auxiliary:
+  - id: javascript_lang_dynamic_regex_input
+    patterns:
+      - pattern: $<UNSANITIZED_DYNAMIC_INPUT>
+        filters:
+          - variable: UNSANITIZED_DYNAMIC_INPUT
+            detection: javascript_shared_common_dynamic_input
+            scope: result
+languages:
+  - javascript
+severity: medium
+metadata:
+  description: Unsanitized dynamic input in regular expression
+  remediation_message: |-
+    ## Description
+
+    Creating regular expressions from dynamic input can lead to a vulnerability known as Regular Expression Denial of Service (ReDoS). This issue arises because some regular expressions can be processed with exponential time complexity. When attackers exploit this, it can significantly drain CPU resources, effectively causing a denial of service.
+
+    ## Remediations
+
+    - **Do** validate all dynamic and user-supplied input against a strict safelist of allowed characters before using it in regular expressions. This step helps prevent attackers from injecting malicious patterns.
+    - **Do** restrict the length of input that can be processed. Limiting input size is a straightforward way to mitigate many ReDoS vulnerabilities.
+    - **Do** implement timeouts for regular expression evaluation to avoid excessive resource consumption. This can be achieved using JavaScript environments or libraries that allow setting execution time limits.
+    - **Do** simplify complex regular expressions to reduce the risk of catastrophic backtracking. Breaking down expressions into simpler parts makes them safer and more manageable.
+    - **Do not** directly concatenate user input into regular expressions. This practice can introduce unsafe patterns and lead to vulnerabilities.
+      ```javascript
+      var dynamicRegex = new RegExp('^' + userInput); // unsafe
+      ```
+
+    ## References
+
+    - [OWASP Regular expression Denial of Service - ReDoS](https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS)
+
+  cwe_id:
+    - 1333
+  id: javascript_lang_dynamic_regex
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_lang_dynamic_regex

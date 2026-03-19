@@ -1,0 +1,68 @@
+imports:
+  - ruby_shared_common_user_input
+patterns:
+  - pattern: |
+      $<LIBRARY>.load($<USER_INPUT>$<...>)$<...>
+    filters:
+      - variable: LIBRARY
+        values:
+          - YAML
+          - Psych
+          - Syck
+          - JSON
+          - Oj
+          - Marshal
+      - variable: USER_INPUT
+        detection: ruby_lang_deserialization_of_user_input_user_input
+        scope: result
+  - pattern: |
+      Marshal.restore($<USER_INPUT>$<...>)
+    filters:
+      - variable: USER_INPUT
+        detection: ruby_lang_deserialization_of_user_input_user_input
+        scope: result
+  - pattern: |
+      Oj.object_load($<USER_INPUT>$<...>)$<...>
+    filters:
+      - variable: USER_INPUT
+        detection: ruby_lang_deserialization_of_user_input_user_input
+        scope: result
+auxiliary:
+  - id: ruby_lang_deserialization_of_user_input_sanitized
+    patterns:
+      - pattern: JSON.parse($<!>$<_>)
+      - pattern: Nokogiri::XML($<!>$<_>)
+  - id: ruby_lang_deserialization_of_user_input_user_input
+    sanitizer: ruby_lang_deserialization_of_user_input_sanitized
+    patterns:
+      - pattern: $<DESERIALIZATION_USER_INPUT>
+        filters:
+          - variable: DESERIALIZATION_USER_INPUT
+            detection: ruby_shared_common_user_input
+            scope: cursor
+languages:
+  - ruby
+severity: critical
+metadata:
+  description: "Unsanitized user input in deserialization method"
+  remediation_message: |-
+    ## Description
+
+    Deserializing data from untrusted sources, like parameters or cookies, without proper validation is a security risk. Attackers can embed malicious code or payloads in serialized data. When your application deserializes this data, it can compromise your system's security.
+
+    ## Remediations
+
+    - **Do not** deserialize data from untrusted sources directly. This prevents attackers from exploiting the deserialization process.
+    - **Do** use data formats that are purely data-oriented and not tied to a specific programming language, such as JSON or XML, for serialization and deserialization. This approach minimizes the risk of executing malicious code during deserialization.
+      ```ruby
+      user_data = JSON.parse(params[:user])
+      JSON.load(user)
+      ```
+
+    ## References
+
+    - [OWASP Deserialization cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html)
+  cwe_id:
+    - 502
+  id: ruby_lang_deserialization_of_user_input
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_lang_deserialization_of_user_input

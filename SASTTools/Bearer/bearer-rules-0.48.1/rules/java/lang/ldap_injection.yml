@@ -1,0 +1,111 @@
+imports:
+  - java_shared_lang_user_input
+  - java_shared_lang_instance
+patterns:
+  - pattern: |
+      $<CONTEXT>.search($<_>, $<USER_INPUT>$<...>)
+    filters:
+      - variable: CONTEXT
+        detection: java_lang_ldap_injection_context
+        scope: cursor
+      - variable: USER_INPUT
+        detection: java_shared_lang_user_input
+        scope: result
+  - pattern: |
+      $<CONTEXT>.search($<_>, $<USER_INPUT>$<...>)
+    filters:
+      - variable: CONTEXT
+        detection: java_lang_ldap_injection_context_fallback
+        scope: cursor
+      - variable: USER_INPUT
+        detection: java_shared_lang_user_input
+        scope: result
+  - pattern: |
+      $<CONTEXT>.$<METHOD>($<USER_INPUT>)
+    filters:
+      - variable: CONTEXT
+        detection: java_lang_ldap_injection_context
+        scope: cursor
+      - variable: METHOD
+        values:
+          - list
+          - lookup
+      - variable: USER_INPUT
+        detection: java_shared_lang_user_input
+        scope: result
+  - pattern: |
+      $<CONTEXT>.$<METHOD>($<USER_INPUT>)
+    filters:
+      - variable: CONTEXT
+        detection: java_lang_ldap_injection_context_fallback
+        scope: cursor
+      - variable: METHOD
+        values:
+          - list
+          - lookup
+      - variable: USER_INPUT
+        detection: java_shared_lang_user_input
+        scope: result
+auxiliary:
+  - id: java_lang_ldap_injection_context
+    patterns:
+      - pattern: $<CONTEXT_INSTANCE>;
+        filters:
+          - variable: CONTEXT_INSTANCE
+            detection: java_shared_lang_instance
+            scope: cursor
+            filters:
+              - either:
+                  - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+                    regex: \A(javax\.naming\.directory\.)?(Context|DirContext|InitialDirContext)\z
+                  - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+                    regex: \A(javax\.naming\.ldap\.)?LdapContext\z
+                  - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+                    regex: \A(javax\.naming\.event\.)?(EventContext|EventDirContext)\z
+  - id: java_lang_ldap_injection_context_fallback
+    patterns:
+      - context;
+      - ctx;
+      - dirContext;
+      - dirCtx;
+      - idc;
+languages:
+  - java
+metadata:
+  description: "Unsanitized user input in LDAP request"
+  remediation_message: |-
+    ## Description
+
+    Using unsanitized user input in an LDAP request can lead to LDAP injection, which is when attackers can modify the LDAP tree structure by injecting malicious input. It's crucial to ensure that data passed to an LDAP query is either not controlled by the user or is properly sanitized.
+
+    ## Remediations
+
+    - **Do** sanitize user input before including it in LDAP queries to prevent LDAP injection attacks.
+      ```java
+      public class Cls extends HttpServlet
+      {
+
+          public void handleRequest(HttpServletRequest request, HttpServletResponse response)
+          {
+              String userID = request.getParameter("userID");
+              String sanitizedUserID = sanitize(userID); // Ensure sanitization method effectively neutralizes LDAP injection vectors
+
+              String filter = "(&(objectclass=person))(|(uid=" + sanitizedUserID + ")(street={0}))";
+              String base = "ou=users,ou=system";
+              Object[] filters = new Object[] {"First avenue"};
+              javax.naming.directory.SearchControls sc = new javax.naming.directory.SearchControls();
+
+              dirContext.search(base, filter, filters, sc);
+          }
+      }
+      ```
+
+    ## References
+
+    - [LDAP Injection](https://owasp.org/www-community/attacks/LDAP_Injection)
+    - [LDAP Injection Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/LDAP_Injection_Prevention_Cheat_Sheet.html)
+  cwe_id:
+    - 90
+  id: java_lang_ldap_injection
+  documentation_url: https://docs.bearer.com/reference/rules/java_lang_ldap_injection
+severity: medium

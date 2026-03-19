@@ -1,0 +1,49 @@
+imports:
+  - java_shared_lang_user_input
+sanitizer: java_lang_path_traversal_paths_with_user_input_sanitizer
+patterns:
+  - pattern: $<PATHS>.get($<USER_INPUT>);
+    filters:
+      - variable: PATHS
+        regex: \A(java\.nio\.file\.)?Paths\z
+      - variable: USER_INPUT
+        detection: java_shared_lang_user_input
+auxiliary:
+  - id: java_lang_path_traversal_paths_with_user_input_sanitizer
+    patterns:
+      - $<_>.normalize();
+languages:
+  - java
+metadata:
+  description: Unsanitized user input in file path
+  remediation_message: |-
+    ## Description
+
+    Unsanitized user input in file paths can compromise your system's security. This vulnerability arises when user input is directly used to construct file names or paths without proper sanitization, potentially leading to path manipulation. Attackers could exploit this to access files or directories outside the intended scope, posing a significant security risk.
+
+    ## Remediations
+
+    - **Do not** construct file paths directly with user input. This practice can inadvertently allow attackers to manipulate paths to access unauthorized files.
+    - **Do** use path normalization utilities to safely handle user input in file paths. These utilities help eliminate dangerous path sequences.
+      ```java
+      public class Cls extends HttpServlet
+      {
+          public void handleRequest(HttpServletRequest request, HttpServletResponse response)
+          {
+              String image = request.getParameter("user_profile_picture");
+
+              // normalize path
+              Path imagePath = Paths.get("user/profile/" + FilenameUtils.getName(image)).normalize();
+              File file = new File(imagePath.toString());
+          }
+      }
+      ```
+
+    ## References
+
+    - [OWASP path traversal](https://owasp.org/www-community/attacks/Path_Traversal)
+  cwe_id:
+    - 73
+  id: java_lang_path_traversal
+  documentation_url: https://docs.bearer.com/reference/rules/java_lang_path_traversal
+severity: high

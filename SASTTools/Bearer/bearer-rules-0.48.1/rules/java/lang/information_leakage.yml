@@ -1,0 +1,65 @@
+imports:
+  - java_shared_lang_instance
+patterns:
+  - pattern: $<EXCEPTION>.printStackTrace();
+    filters:
+      - variable: EXCEPTION
+        detection: java_shared_lang_instance
+        scope: cursor
+        filters:
+          - either:
+              - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+                regex: \A(java\.lang\.)?Throwable\z
+              - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+                regex: \A(java\.lang\.)?Error\z
+              - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+                regex: \A(java\.lang\.)?Exception\z
+              - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+                regex: \A(java\.lang\.)?OutOfMemoryError\z
+              - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+                regex: \A(java\.lang\.)?StackOverflowError\z
+              - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+                regex: \A(java\.io\.)?FileNotFoundException\z
+              - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+                regex: \A(java\.sql\.)?SQLException\z
+              - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+                regex: \A(java\.net\.)?BindException\z
+              - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+                regex: \A(java\.util\.)?ConcurrentModificationException\z
+              - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+                regex: \A(javax\.naming\.)?InsufficientResourcesException\z
+              - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+                regex: \A(java\.util\.)?MissingResourceException\z
+              - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+                regex: \A(java\.util\.jar\.)?JarException\z
+              - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+                regex: \A(java\.security\.acl\.)?NotOwnerException\z
+languages:
+  - java
+severity: low
+metadata:
+  description: Leakage of sensitive information in exception message
+  remediation_message: |-
+    ## Description
+
+    Leakage of sensitive information in exception messages poses a significant security risk. When an exception message is printed to the default output, it might reveal sensitive details about your application's technical setup or environment. This could potentially open the door to attacks, such as path traversal. Even more concerning is the possibility of exposing user-specific data, which could lead to serious privacy breaches.
+
+    ## Remediations
+
+    - **Do not** print the full stack trace to the default output. This can inadvertently reveal sensitive information.
+      ```java
+      System.out.println(e); // unsafe
+      ```
+    - **Do** limit error messages to only include the necessary information for understanding the issue without exposing sensitive data.
+      ```java
+      System.out.println("An error occurred. Please try again.");
+      ```
+
+    ## References
+
+    - [Web Application Security Consortium: Information Leakage](http://projects.webappsec.org/w/page/13246936/Information%20Leakage)
+  cwe_id:
+    - 209
+  id: java_lang_information_leakage
+  documentation_url: https://docs.bearer.com/reference/rules/java_lang_information_leakage
+  cloud_code_suggestions: true

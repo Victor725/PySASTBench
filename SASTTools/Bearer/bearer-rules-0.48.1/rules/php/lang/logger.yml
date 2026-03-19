@@ -1,0 +1,40 @@
+imports:
+  - php_shared_lang_datatype
+patterns:
+  - pattern: |
+      error_log($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: DATA_TYPE
+        detection: php_shared_lang_datatype
+        scope: result
+languages:
+  - php
+skip_data_types:
+  - "Unique Identifier"
+metadata:
+  description: "Leakage of sensitive information in logger message"
+  remediation_message: |-
+    ## Description
+
+    Sensitive information leakage in logger messages can compromise user privacy and security. This vulnerability occurs when sensitive data, such as personal identifiable information (PII), is included in log messages, making it accessible to unauthorized individuals.
+
+    ## Remediations
+
+    - **Do not** include sensitive data in logger messages. This can lead to unintentional exposure of private information.
+      ```php
+      error_log('User is: ' . $user.email);  // unsafe
+      ```
+    - **Do** use non-sensitive, unique identifiers to reference users or other entities in log messages. This approach helps maintain privacy and security.
+      ```php
+      error_log('User is: ' . $user.uuid);
+      ```
+
+    ## References
+
+    - [OWASP Logging Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html)
+  cwe_id:
+    - 532
+  id: php_lang_logger
+  documentation_url: https://docs.bearer.com/reference/rules/php_lang_logger
+  cloud_code_suggestions: true
+severity: medium

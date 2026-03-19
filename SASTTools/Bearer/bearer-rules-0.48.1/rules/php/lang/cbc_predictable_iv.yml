@@ -1,0 +1,46 @@
+languages:
+  - php
+patterns:
+  - pattern: $<FUNCTION>($<_>, $<ALGORITHM>, $<_>, $<_>, $<INIT_VECTOR>$<...>)
+    filters:
+      - variable: FUNCTION
+        values:
+          - openssl_decrypt
+          - openssl_encrypt
+      - variable: ALGORITHM
+        string_regex: (?i)-cbc(-|\z)
+      - variable: INIT_VECTOR
+        detection: string_literal
+        scope: cursor
+  - pattern: |
+      $<FUNCTION>($<_>, $<ALGORITHM>, iv: $<INIT_VECTOR>)
+    filters:
+      - variable: FUNCTION
+        values:
+          - openssl_decrypt
+          - openssl_encrypt
+      - variable: ALGORITHM
+        string_regex: (?i)-cbc(-|\z)
+      - variable: INIT_VECTOR
+        detection: string_literal
+        scope: cursor
+severity: medium
+metadata:
+  description: "Usage of CBC (Cipher Block Chaining) with predictable
+    Initialization Vector (IV)"
+  remediation_message: |-
+    ## Description
+
+    When your application employs Cipher Block Chaining (CBC) mode for encryption, it's crucial to avoid using a predictable Initialization Vector (IV). A predictable IV can make your encryption vulnerable to dictionary attacks, where attackers can guess the encryption key by trying many possibilities.
+
+    ## Remediations
+
+    - **Do not** use a static or predictable Initialization Vector (IV) for encryption. This approach can compromise the security of your encrypted data.
+      ```php
+      openssl_encrypt($data, "aes-256-cbc", iv: "literal-iv"); // unsafe
+      ```
+    - **Do** use a strong, random IV for each encryption operation to enhance security. This practice prevents attackers from predicting the IV and launching dictionary attacks.
+  cwe_id:
+    - 329
+  id: php_lang_cbc_predictable_iv
+  documentation_url: https://docs.bearer.com/reference/rules/php_lang_cbc_predictable_iv

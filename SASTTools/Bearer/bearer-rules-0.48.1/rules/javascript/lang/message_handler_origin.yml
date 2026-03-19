@@ -1,0 +1,75 @@
+languages:
+  - javascript
+patterns:
+  - pattern: |
+      window.addEventListener($<TYPE>, $<HANDLER>$<...>)
+    filters:
+      - variable: TYPE
+        regex: \A["']message["']\z
+      - variable: HANDLER
+        detection: javascript_lang_message_handler_origin_handler
+      - not:
+          variable: HANDLER
+          detection: javascript_lang_message_handler_origin_check
+  - pattern: |
+      addEventListener($<TYPE>, $<HANDLER>$<...>)
+    filters:
+      - variable: TYPE
+        regex: \A["']message["']\z
+      - variable: HANDLER
+        detection: javascript_lang_message_handler_origin_handler
+      - not:
+          variable: HANDLER
+          detection: javascript_lang_message_handler_origin_check
+auxiliary:
+  - id: javascript_lang_message_handler_origin_handler
+    patterns:
+      - function $<...>($<!>$<_>) {}
+      - ($<!>$<_>) => {}
+  - id: javascript_lang_message_handler_origin_check
+    patterns:
+      - pattern: if ($<CONDITION>) {}$<...>
+        filters:
+          - variable: CONDITION
+            detection: javascript_lang_message_handler_origin_event_origin
+  - id: javascript_lang_message_handler_origin_event_origin
+    patterns:
+      - pattern: $<EVENT>.origin
+        filters:
+          - variable: EVENT
+            detection: javascript_lang_message_handler_origin_handler
+            scope: cursor
+severity: medium
+metadata:
+  description: "Missing origin check in message handler"
+  remediation_message: |-
+    ## Description
+
+    Failing to verify the origin of message events can expose your application to Cross-Site Scripting (XSS) attacks. This vulnerability arises when an application processes messages without confirming if they come from a trusted source.
+
+    ## Remediations
+
+    - **Do not** add message event listeners without checking the origin of the messages. This approach leaves your application vulnerable to malicious inputs.
+      ```javascript
+      window.addEventListener('message', (event) => {
+        actOnMessage(event.data) // unsafe
+      })
+      ```
+    - **Do** validate the origin of incoming messages before processing them. Ensure that the message comes from a trusted source by comparing the event's origin with a predefined list of allowed origins.
+      ```javascript
+      window.addEventListener('message', (event) => {
+        if (event.origin != 'https://myapp.example.com') {
+          throw new Error('invalid origin')
+        }
+
+        actOnMessage(event.data)
+      })
+      ```
+
+    ## References
+
+    - [OWASP Cross-Site Scripting (XSS) Cheatsheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)
+  cwe_id:
+    - 346
+  id: "javascript_lang_message_handler_origin"
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_lang_message_handler_origin

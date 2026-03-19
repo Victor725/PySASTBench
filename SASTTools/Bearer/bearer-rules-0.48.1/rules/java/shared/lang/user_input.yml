@@ -1,0 +1,81 @@
+imports:
+  - java_shared_lang_servlet_request
+type: shared
+languages:
+  - java
+patterns:
+  - pattern: $<USER_INPUT>.$<METHOD>();
+    filters:
+      - variable: USER_INPUT
+        detection: java_shared_lang_user_input
+        scope: cursor
+      - variable: METHOD
+        values:
+          - getBytes
+          # - replace # sanitizer
+          # - replaceAll # sanitizer
+          - split
+          - substring
+          - toCharArray
+          - toLowerCase
+          - toString
+          - toUpperCase
+            # StringBuilder
+          - append
+          - toString
+            # Enumeration
+          - nextElement
+  - pattern: $<JAVA_SHARED_LANG_USER_INPUT_REQUEST>.$<JAVA_SHARED_LANG_USER_INPUT_METHOD>();
+    filters:
+      - variable: JAVA_SHARED_LANG_USER_INPUT_REQUEST
+        detection: java_shared_lang_servlet_request
+        scope: cursor
+      - variable: JAVA_SHARED_LANG_USER_INPUT_METHOD
+        values:
+          - getCookies
+          - getHeader
+          - getHeaders
+          - getRequestURI
+          - getRequestURL
+          - getAttribute
+          - getInputStream
+          - getQueryString
+          - getPathInfo
+          - getParameter
+          - getParameterMap
+          - getParameterNames
+          - getParameterValues
+          - getReader
+          - getHeaderNames
+          - getPart
+          - getParts
+          - getSession
+          - getServletContext
+  - pattern: $<JAVA_SHARED_LANG_USER_INPUT_COOKIE>.getValue();
+    filters:
+      - variable: JAVA_SHARED_LANG_USER_INPUT_COOKIE
+        detection: java_shared_lang_user_input_cookies
+        scope: result
+  - pattern: $<JAVA_SHARED_LANG_USER_INPUT_PARAM_MAP>.get();
+    filters:
+      - variable: JAVA_SHARED_LANG_USER_INPUT_PARAM_MAP
+        detection: java_shared_lang_user_input_param_map
+        scope: cursor
+auxiliary:
+  - id: java_shared_lang_user_input_cookies
+    patterns:
+      - pattern: $<JAVA_SHARED_LANG_USER_INPUT_REQUEST>.getCookies();
+        filters:
+          - variable: JAVA_SHARED_LANG_USER_INPUT_REQUEST
+            detection: java_shared_lang_servlet_request
+            scope: cursor
+  - id: java_shared_lang_user_input_param_map
+    patterns:
+      - pattern: $<JAVA_SHARED_LANG_USER_INPUT_REQUEST>.getParameterMap();
+        filters:
+          - variable: JAVA_SHARED_LANG_USER_INPUT_REQUEST
+            detection: java_shared_lang_servlet_request
+            scope: cursor
+metadata:
+  description: "Java user input."
+  id: java_shared_lang_user_input

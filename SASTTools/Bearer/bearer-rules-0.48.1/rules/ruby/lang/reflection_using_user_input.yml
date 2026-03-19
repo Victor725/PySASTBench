@@ -1,0 +1,125 @@
+languages:
+  - ruby
+imports:
+  - ruby_shared_common_user_input
+patterns:
+  - pattern: |
+      $<_>.$<METHOD>($<USER_INPUT>$<...>)
+    filters:
+      - variable: METHOD
+        values:
+          - const_get
+          - const_set
+          - remove_const
+          - class_variable_get
+          - class_variable_set
+          - remove_class_variable
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+  - pattern: |
+      $<_>.$<METHOD>($<USER_INPUT>$<...>)$<...>
+    filters:
+      - variable: METHOD
+        values:
+          - method
+          - instance_method
+          - public_method
+          - singleton_method
+          - define_method
+          - define_singleton_method
+          - instance_variable_get
+          - instance_variable_set
+          - remove_instance_variable
+          - enum_for
+          - to_enum
+          - send
+          - public_send
+          - try
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+  - pattern: |
+      $<METHOD>($<USER_INPUT>$<...>)$<...>
+    filters:
+      - variable: METHOD
+        values:
+          - method
+          - instance_method
+          - public_method
+          - singleton_method
+          - define_method
+          - define_singleton_method
+          - instance_variable_get
+          - instance_variable_set
+          - remove_instance_variable
+          - enum_for
+          - to_enum
+          - send
+          - public_send
+          - try
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+  - pattern: |
+      $<USER_INPUT>.to_proc
+    filters:
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+  - pattern: |
+      $<_>(&$<USER_INPUT>)
+    filters:
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+  - pattern: |
+      $<_>.$<_>(&$<USER_INPUT>)
+    filters:
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+  - pattern: |
+      $<USER_INPUT>.$<METHOD>
+    filters:
+      - variable: USER_INPUT
+        detection: ruby_shared_common_user_input
+        scope: result
+      - variable: METHOD
+        values:
+          - constantize
+          - safe_constantize
+severity: critical
+metadata:
+  description: "Unsanitized user input in code generation"
+  remediation_message: |-
+    ## Description
+
+    Using unsanitized user input in code generation can lead to code injection vulnerabilities. This issue arises when an application dynamically generates or manipulates code based on user-supplied data without proper validation or sanitization.
+
+    ## Remediations
+
+    - **Do not** directly use user input for code generation or reflection. This can lead to malicious code execution.
+      ```ruby
+      method(params[:method]) # unsafe
+      ```
+    - **Do** validate or sanitize user input before using it in code generation. Use a controlled approach to map user inputs to specific, predefined actions or methods.
+      ```ruby
+      method_name =
+        case params[:action]
+        when "option1"
+          "method1"
+        when "option2"
+          "method2"
+        end
+
+      method(method_name)
+      ```
+
+    ## References
+
+    - [OWASP Code injection explained](https://owasp.org/www-community/attacks/Code_Injection)
+  cwe_id:
+    - 94
+  id: ruby_lang_reflection_using_user_input
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_lang_reflection_using_user_input

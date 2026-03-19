@@ -1,0 +1,42 @@
+patterns:
+  - |
+    Net::HTTP.start(verify_mode: OpenSSL::SSL::VERIFY_NONE)$<...>
+  - |
+    Net::HTTP.start($<...>{ verify_mode: OpenSSL::SSL::VERIFY_NONE })$<...>
+  - |
+    $<_>.verify_mode = OpenSSL::SSL::VERIFY_NONE
+languages:
+  - ruby
+severity: high
+metadata:
+  description: "Missing SSL certificate verification"
+  remediation_message: |-
+    ## Description
+
+    Missing SSL certificate verification can compromise the security of sensitive data. This vulnerability arises when an application fails to check for valid SSL certificates during data transmission, potentially allowing attackers to intercept or manipulate data.
+
+    ## Remediations
+
+    - **Do not** disable SSL certificate verification. Disabling it, as shown below, makes your application vulnerable to Man-in-the-Middle attacks.
+      ```ruby
+      require "net/https"
+      require "uri"
+
+      uri = URI.parse("https://ssl-site.com/")
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = true
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE # unsafe
+      ```
+    - **Do** ensure SSL certificate verification is enabled by setting the verification mode to `VERIFY_PEER`. This ensures the authenticity of the SSL certificate presented by the server.
+      ```ruby
+      http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+      ```
+
+    ## References
+
+    - [Ruby OpenSSL module](https://ruby.github.io/openssl/OpenSSL.html)
+  cwe_id:
+    - 295
+  id: ruby_lang_ssl_verification
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_lang_ssl_verification
+  cloud_code_suggestions: true

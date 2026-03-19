@@ -1,0 +1,36 @@
+imports:
+  - ruby_shared_common_datatype
+patterns:
+  - pattern: |
+      raise($<DATA_TYPE>)
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+languages:
+  - ruby
+skip_data_types:
+  - Unique Identifier
+metadata:
+  description: "Leakage of sensitive data in exception message"
+  remediation_message: |-
+    ## Description
+
+    Leakage of sensitive data in exception messages can lead to data breaches. This vulnerability occurs when sensitive information is included in exceptions, making it accessible to unauthorized users.
+
+    ## Remediations
+
+    - **Do not** include sensitive data in exception messages. This can inadvertently expose private information.
+      ```ruby
+      raise CustomException.new(user.email) # unsafe
+      ```
+    - **Do** use non-sensitive, unique identifiers in exception messages to avoid revealing personal information.
+      ```ruby
+      raise CustomException.new(user.uuid)
+      ```
+  cwe_id:
+    - 210
+  id: ruby_lang_exception
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_lang_exception
+  cloud_code_suggestions: true
+severity: medium

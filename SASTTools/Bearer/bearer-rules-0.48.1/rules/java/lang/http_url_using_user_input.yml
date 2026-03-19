@@ -1,0 +1,83 @@
+imports:
+  - java_shared_lang_user_input
+patterns:
+  - pattern: |
+      $<USER_INPUT_URL>.$<METHOD>()
+    filters:
+      - variable: USER_INPUT_URL
+        detection: java_lang_http_url_using_user_input_url
+        scope: cursor
+      - variable: METHOD
+        values:
+          - connect
+          - GetContent
+          - openConnection
+          - openStream
+          - getContent
+  - pattern: |
+      new $<INET_SOCKET_ADDRESS>($<USER_INPUT>$<...>);
+    filters:
+      - variable: INET_SOCKET_ADDRESS
+        regex: \A(java\.net\.)?InetSocketAddress\z
+      - variable: USER_INPUT
+        detection: java_lang_http_url_using_user_input_user_input
+        scope: result
+auxiliary:
+  - id: java_lang_http_url_using_user_input_url
+    patterns:
+      - pattern: new $<URI>($<USER_INPUT>);
+        filters:
+          - variable: URI
+            regex: \A(java\.net\.)?(URL|URI)\z
+          - variable: USER_INPUT
+            detection: java_lang_http_url_using_user_input_user_input
+            scope: result
+  - id: java_lang_http_url_using_user_input_user_input
+    sanitizer: java_lang_http_url_using_user_input_sanitizer
+    patterns:
+      - pattern: $<USER_INPUT>;
+        filters:
+          - variable: USER_INPUT
+            detection: java_shared_lang_user_input
+            scope: cursor
+  - id: java_lang_http_url_using_user_input_sanitizer
+    patterns:
+      - pattern: $<CLASS>.encode($<!>$<_>$<...>);
+        filters:
+          - variable: CLASS
+            regex: \A(java\.net\.)?URLEncoder\z
+      - pattern: $<PATH_SEGMENT_ESCAPER>.escape($<!>$<_>);
+        filters:
+          - variable: PATH_SEGMENT_ESCAPER
+            regex: \A((com\.google\.common\.net\.)?UrlEscapers\.)?urlPathSegmentEscaper\(\)\z
+languages:
+  - java
+metadata:
+  description: "Unsanitized user input in HTTP request (SSRF)"
+  remediation_message: |-
+    ## Description
+
+    Directly incorporating user input into HTTP request URLs can lead to Server-Side Request Forgery (SSRF) attacks. This vulnerability occurs when an attacker can control the destination of an HTTP request sent by the server.
+
+    ## Remediations
+
+    - **Do not** concatenate or include user input directly in URLs for HTTP requests. This practice can allow attackers to manipulate requests to unauthorized or malicious sites.
+      ```java
+      new URL(request.getParameter("someRandomUrl")).getContent(); // unsafe
+      ```
+    - **Do** validate or map user inputs to predefined options before using them to construct URLs. This approach ensures that the application only requests URLs to known, safe destinations.
+      ```java
+      String url;
+      if (request.getParameter("selectedUrl").equals("option1")) {
+        url = "https://api1.com";
+      } else {
+        url = "https://api2.com";
+      }
+
+      new URL(url).getContent();
+      ```
+  cwe_id:
+    - 918
+  id: java_lang_http_url_using_user_input
+  documentation_url: https://docs.bearer.com/reference/rules/java_lang_http_url_using_user_input
+severity: high

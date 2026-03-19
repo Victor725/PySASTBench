@@ -1,0 +1,25 @@
+patterns:
+  - pattern: |
+      app.use($<...>serveIndex()$<...>)
+languages:
+  - javascript
+metadata:
+  description: "Missing access restriction on directory listing"
+  remediation_message: |-
+    ## Description
+
+    Exposing a directory listing without restrictions can lead to unauthorized access to sensitive data or source code. This vulnerability occurs when the file structure of a server or application is made visible to users without proper access control, potentially allowing attackers to exploit the exposed file structure.
+
+    ## Remediations
+
+    - **Do** restrict access to sensitive directories and files to prevent unauthorized access. Implementing access controls ensures that only authorized users can view or interact with specific file directories.
+
+    ## References
+
+    - [Express Serve index middleware](https://expressjs.com/en/resources/middleware/serve-index.html)
+  cwe_id:
+    - 548
+  id: "javascript_express_exposed_dir_listing"
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_express_exposed_dir_listing
+  cloud_code_suggestions: true
+severity: low

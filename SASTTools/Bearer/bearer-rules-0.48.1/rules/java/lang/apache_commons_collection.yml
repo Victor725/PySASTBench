@@ -1,0 +1,38 @@
+patterns:
+  - pattern: new $<INVOKER_TRANSFORMER>();
+    filters:
+      - variable: INVOKER_TRANSFORMER
+        regex: \A(org\.apache\.commons\.collections\.functors\.)?InvokerTransformer\z
+dependency_check: true
+dependency:
+  name: commons-collections3
+  min_version: 3.2.1
+  filename: maven-dependencies.json
+languages:
+  - java
+metadata:
+  description: Usage of vulnerable Apache Commons Collections InvokeTransformer class
+  remediation_message: |-
+    ## Description
+
+    The InvokeTransformer class in versions of Apache Commons Collections older than 3.2.2 is susceptible to remote code execution vulnerabilities. This issue arises during the deserialization of data, where malicious actors can execute arbitrary code on the server.
+
+    ## Remediations
+
+    - **Do** upgrade Apache Commons Collections 3 to version 3.2.2 or above to mitigate the vulnerability associated with the InvokeTransformer class.
+      ```java
+      <dependency>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-collections4</artifactId>
+          <version>3.2.2</version>
+      </dependency>
+      ```
+
+    ## References
+
+    - [Apache Commons Collections 3.2.2 Security Report](https://commons.apache.org/proper/commons-collections/security-reports.html)
+  cwe_id:
+    - 1395
+  id: java_lang_apache_commons_collection
+  documentation_url: https://docs.bearer.com/reference/rules/java_lang_apache_commons_collection
+severity: medium

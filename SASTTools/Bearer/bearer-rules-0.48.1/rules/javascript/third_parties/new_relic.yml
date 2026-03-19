@@ -1,0 +1,73 @@
+imports:
+  - javascript_shared_common_datatype
+patterns:
+  - pattern: |
+      $<CLIENT>.$<METHOD>($<_>, $<DATA_TYPE>)
+    filters:
+      - variable: CLIENT
+        values:
+          - newrelic
+          - newRelic
+          - client
+      - variable: METHOD
+        values:
+          - noticeError
+          - setCustomAttribute
+      - variable: DATA_TYPE
+        detection: javascript_shared_common_datatype
+        scope: result
+  - pattern: |
+      $<CLIENT>.$<METHOD>($<DATA_TYPE>, $<_>)
+    filters:
+      - variable: CLIENT
+        values:
+          - newrelic
+          - newRelic
+          - client
+      - variable: METHOD
+        values:
+          - setPageViewName
+      - variable: DATA_TYPE
+        detection: javascript_shared_common_datatype
+        scope: result
+  - pattern: |
+      $<INTERACTION>.setAttribute($<_>, $<DATA_TYPE>)
+    filters:
+      - variable: INTERACTION
+        detection: javascript_new_relic_interaction
+      - variable: DATA_TYPE
+        detection: javascript_shared_common_datatype
+        scope: result
+languages:
+  - javascript
+auxiliary:
+  - id: javascript_new_relic_interaction
+    patterns:
+      - pattern: |
+          $<CLIENT>.interaction()
+        filters:
+          - variable: CLIENT
+            values:
+              - newrelic
+              - newRelic
+              - client
+metadata:
+  description: "Leakage of sensitive data to New Relic"
+  remediation_message: |
+    ## Description
+
+    Leaking sensitive data to third-party loggers like New Relic is a common cause of data leaks and can lead to data breaches.
+
+    ## Remediations
+
+    - **Do** ensure all sensitive data is removed when sending data to third-party loggers like New Relic
+
+    ## References
+    - [New Relic Docs](https://docs.newrelic.com/)
+    - [Log obfuscation](https://docs.newrelic.com/docs/logs/ui-data/obfuscation-ui/)
+  cwe_id:
+    - 201
+  id: "javascript_third_parties_new_relic"
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_third_parties_new_relic
+  cloud_code_suggestions: true
+severity: medium

@@ -1,0 +1,36 @@
+languages:
+  - javascript
+imports:
+  - javascript_shared_common_insecure_url
+patterns:
+  - pattern: new WebSocket($<INSECURE_URL>$<...>)
+    filters:
+      - variable: INSECURE_URL
+        detection: javascript_shared_common_insecure_url
+        scope: cursor
+severity: critical
+metadata:
+  description: "Usage of insecure websocket connection"
+  remediation_message: |-
+    ## Description
+
+    Your application is at risk when it connects to APIs via insecure websocket connections. This vulnerability occurs because the data transmitted over these connections can be intercepted or tampered with by attackers. Ensure that all websocket connections in your application use SSL to encrypt the data in transit, safeguarding it from unauthorized access.
+
+    ## Remediations
+
+    - **Do not** initiate websocket connections without SSL. Such connections are vulnerable to interception and compromise.
+      ```javascript
+      const client = new WebSocket('ws://insecure-api.com'); // unsafe
+      ```
+    - **Do** ensure all websocket connections are secured with SSL. This encrypts the data transmitted, protecting it from eavesdroppers and tampering.
+      ```javascript
+      const client = new WebSocket('wss://secure-api.com');
+      ```
+
+    ## References
+
+    - [OWASP insecure transport](https://owasp.org/www-community/vulnerabilities/Insecure_Transport)
+  cwe_id:
+    - 319
+  id: javascript_lang_websocket_insecure
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_lang_websocket_insecure

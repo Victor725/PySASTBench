@@ -1,0 +1,36 @@
+imports:
+  - java_shared_lang_user_input
+patterns:
+  - pattern: |
+      $<PATTERN>.compile($<USER_INPUT>$<...>)
+    filters:
+      - variable: PATTERN
+        regex: \A(java\.util\.regex\.)?Pattern\z
+      - variable: USER_INPUT
+        detection: java_shared_lang_user_input
+        scope: cursor
+languages:
+  - java
+metadata:
+  description: "Unsanitized user input in regular expression"
+  remediation_message: |-
+    ## Description
+
+    Constructing regular expressions from user input can lead to a vulnerability known as Regular Expression Denial of Service (ReDoS). This issue arises because certain regular expressions can be processed with exponential time complexity. If attackers exploit this, they can cause significant CPU usage spikes, effectively denying service to legitimate users.
+
+    ## Remediations
+
+    - **Do not** - wherever possible - use user input directly in regular expressions. This can prevent attackers from exploiting complex patterns that cause excessive CPU consumption.
+      ```java
+      Pattern pattern = Pattern.compile(request.getParameter("dangerousRegex"));
+      ```
+    - **Do** sanitize or validate user input if it must be used in a regular expression. Ensure that the input does not contain patterns that could lead to ReDoS.
+
+    ## References
+
+    - [OWASP ReDoS attacks explained](https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS)
+  cwe_id:
+    - 1287
+  id: java_lang_regex_using_user_input
+  documentation_url: https://docs.bearer.com/reference/rules/java_lang_regex_using_user_input
+severity: medium

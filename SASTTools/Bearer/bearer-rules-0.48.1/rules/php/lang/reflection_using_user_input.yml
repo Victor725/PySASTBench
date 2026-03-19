@@ -1,0 +1,92 @@
+languages:
+  - php
+imports:
+  - php_shared_lang_user_input
+patterns:
+  - pattern: |
+      include $<USER_INPUT>
+    filters:
+      - variable: USER_INPUT
+        detection: php_shared_lang_user_input
+        scope: result
+  - pattern: |
+      include_once $<USER_INPUT>
+    filters:
+      - variable: USER_INPUT
+        detection: php_shared_lang_user_input
+        scope: result
+  - pattern: |
+      require $<USER_INPUT>
+    filters:
+      - variable: USER_INPUT
+        detection: php_shared_lang_user_input
+        scope: result
+  - pattern: |
+      require_once $<USER_INPUT>
+    filters:
+      - variable: USER_INPUT
+        detection: php_shared_lang_user_input
+        scope: result
+  - pattern: ${$<USER_INPUT>}
+    filters:
+      - variable: USER_INPUT
+        detection: php_shared_lang_user_input
+        scope: result
+  - pattern: $<USER_INPUT>()
+    filters:
+      - variable: USER_INPUT
+        detection: php_shared_lang_user_input
+        scope: result
+  - pattern: $<CLASS>::$<_>($<...>$<USER_INPUT>$<...>)
+    filters:
+      - variable: CLASS
+        regex: \AReflection
+      - variable: USER_INPUT
+        detection: php_shared_lang_user_input
+        scope: result
+  - pattern: new $<CLASS>($<...>$<USER_INPUT>$<...>)
+    filters:
+      - variable: CLASS
+        regex: \AReflection
+      - variable: USER_INPUT
+        detection: php_shared_lang_user_input
+        scope: result
+  - pattern: $<REFLECTION>->$<_>($<...>$<USER_INPUT>$<...>)
+    filters:
+      - variable: REFLECTION
+        detection: php_lang_reflection_using_user_input_reflection_instance
+        scope: cursor
+      - variable: USER_INPUT
+        detection: php_shared_lang_user_input
+        scope: result
+auxiliary:
+  - id: php_lang_reflection_using_user_input_reflection_instance
+    patterns:
+      - pattern: new $<CLASS>()
+        filters:
+          - variable: CLASS
+            regex: \AReflection
+severity: high
+metadata:
+  description: "Unsanitized user input in code generation"
+  remediation_message: |-
+    ## Description
+
+    Unsanitized user input in code generation can lead to code injection vulnerabilities. This occurs when an application dynamically generates or manipulates code using data provided by the user without proper sanitization.
+
+    ## Remediations
+
+    - **Do not** use user-supplied input directly in code generation or reflection mechanisms. This practice can introduce severe security vulnerabilities.
+      ```php
+      $class = new ReflectionClass($_GET["class"]) // unsafe
+      ```
+    - **Do** validate and sanitize all user input used in code generation to ensure it does not contain malicious code. Use a whitelist approach, allowing only known safe values.
+    - **Do** employ security mechanisms such as input validation libraries or frameworks that specifically address code injection risks.
+
+    ## References
+
+    - [OWASP Code injection explained](https://owasp.org/www-community/attacks/Code_Injection)
+  cwe_id:
+    - 98
+  id: php_lang_reflection_using_user_input
+  documentation_url: https://docs.bearer.com/reference/rules/php_lang_reflection_using_user_input

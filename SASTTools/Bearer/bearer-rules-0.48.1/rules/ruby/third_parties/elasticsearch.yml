@@ -1,0 +1,62 @@
+imports:
+  - ruby_shared_common_datatype
+patterns:
+  - pattern: |
+      $<CLIENT>.$<METHOD>(body: $<DATA_TYPE>)
+    filters:
+      - variable: CLIENT
+        detection: ruby_third_parties_elasticsearch_client
+        scope: cursor
+      - variable: METHOD
+        values:
+          - bulk
+          - index
+          - update
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      $<CLIENT>.$<METHOD>({ body: $<DATA_TYPE> })
+    filters:
+      - variable: CLIENT
+        detection: ruby_third_parties_elasticsearch_client
+        scope: cursor
+      - variable: METHOD
+        values:
+          - bulk
+          - index
+          - update
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+languages:
+  - ruby
+auxiliary:
+  - id: ruby_third_parties_elasticsearch_client
+    patterns:
+      - |
+        Elasticsearch::Client.new()
+      - |
+        Elasticsearch::Client.new
+skip_data_types:
+  - "Unique Identifier"
+metadata:
+  description: "Leakage of sensitive data to Elasticsearch"
+  remediation_message: |
+    ## Description
+
+    Leaking sensitive data to third-party data tools is a common cause of data leaks and can lead to data breaches.
+
+    ## Remediations
+
+    - **Do** ensure all sensitive data is removed when sending data to third-party services like ElasticSearch
+
+    ## References
+    - [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/client/ruby-api/current/index.html)
+  cwe_id:
+    - 201
+  associated_recipe: Elasticsearch
+  id: ruby_third_parties_elasticsearch
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_third_parties_elasticsearch
+  cloud_code_suggestions: true
+severity: medium

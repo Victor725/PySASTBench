@@ -1,0 +1,60 @@
+imports:
+  - ruby_shared_common_datatype
+patterns:
+  - pattern: |
+      Datadog.configure do |$<CONFIG:identifier>|
+        $<!>$<CONFIG>.tags = $<DATA_TYPE>
+      end
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      $<SPAN>.set_tag($<_>, $<DATA_TYPE>)
+    filters:
+      - variable: SPAN
+        detection: ruby_third_parties_datadog_span
+        scope: cursor
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      Datadog::Tracing.trace($<_>, $<...>$<DATA_TYPE>$<...>)$<...>
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+languages:
+  - ruby
+auxiliary:
+  - id: ruby_third_parties_datadog_span
+    patterns:
+      - |
+        Datadog.configuration[$<_>][$<_>].active_span
+      - |
+        Datadog::Tracing.active_span
+      - |
+        Datadog::Tracing.trace() { |$<!>$<_:identifier>$<...>| }
+skip_data_types:
+  - "Unique Identifier"
+metadata:
+  description: "Leakage of sensitive data to Datadog"
+  remediation_message: |
+    ## Description
+
+    Leaking sensitive data to third-party loggers like Datadog is a common cause of data leaks and can lead to data breaches.
+
+    ## Remediations
+
+    - **Do** ensure all sensitive data is removed when sending data to third-party loggers like Datadog.
+
+    ## References
+    - [Datadog docs](https://docs.datadoghq.com)
+    - [Scrubbing data](https://docs.datadoghq.com/tracing/configure_data_security/?tab=ruby#scrub-sensitive-data-from-your-spans)
+  cwe_id:
+    - 201
+  associated_recipe: Datadog
+  id: ruby_third_parties_datadog
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_third_parties_datadog
+  cloud_code_suggestions: true
+severity: medium

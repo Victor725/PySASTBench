@@ -1,0 +1,35 @@
+imports:
+  - javascript_shared_common_user_input
+patterns:
+  - pattern: |
+      new RegExp($<USER_INPUT>$<...>)
+    filters:
+      - variable: USER_INPUT
+        detection: javascript_shared_common_user_input
+        scope: result
+languages:
+  - javascript
+metadata:
+  description: "Unsanitized user input in regular expression"
+  remediation_message: |-
+    ## Description
+
+    Creating regular expressions from user input can lead to a vulnerability known as Regular Expression Denial of Service (ReDoS). This issue arises because some regular expressions can be processed with exponential time complexity. When attackers exploit this, it can significantly drain CPU resources, effectively causing a denial of service.
+
+    ## Remediations
+
+    - **Do not** use user-supplied data directly in regular expressions. This can prevent attackers from exploiting the ReDoS vulnerability to cause a denial of service.
+      ```javascript
+      new RegExp(`abc${req.params.untrusted}`, 'i'); // unsafe
+      ```
+    - **Do** sanitize or validate all user input if it must be used in a regular expression, to ensure it does not contain patterns that can lead to ReDoS attacks.
+    - **Do** consider implementing timeouts or other limitations on regex operations to mitigate potential ReDoS attacks when user input is involved.
+
+    ## References
+
+    - [OWASP ReDoS attacks explained](https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS)
+  cwe_id:
+    - 1287
+  id: javascript_lang_regex_using_user_input
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_lang_regex_using_user_input
+severity: medium

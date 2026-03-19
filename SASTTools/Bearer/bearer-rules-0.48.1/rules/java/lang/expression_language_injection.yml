@@ -1,0 +1,55 @@
+imports:
+  - java_shared_lang_instance
+patterns:
+  - pattern: $<EXPRESSION_FACTORY>.$<METHOD>($<EL_CONTEXT>, $<STRING_PARAM>$<...>);
+    filters:
+      - variable: EXPRESSION_FACTORY
+        detection: java_shared_lang_instance
+        scope: cursor
+        filters:
+          - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+            regex: \A(javax\.el\.)?ExpressionFactory\z
+      - variable: METHOD
+        values:
+          - createValueExpression
+          - createMethodExpression
+      - variable: EL_CONTEXT
+        detection: java_shared_lang_instance
+        scope: cursor
+        filters:
+          - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+            regex: \A(javax\.el\.)?ELContext\z
+      - variable: STRING_PARAM
+        detection: java_lang_expression_language_injection_string_method_arg
+auxiliary:
+  - id: java_lang_expression_language_injection_string_method_arg
+    patterns:
+      - pattern: |
+          class $<...>$<_> $<...>{
+            $<...>$<_> $<_>($<...>$<STRING_TYPE> $<STRING_VAR>$<...>)$<...>{}
+          }
+        focus: STRING_VAR
+        filters:
+          - variable: STRING_TYPE
+            regex: \A(java\.lang\.)?String\z
+languages:
+  - java
+severity: high
+metadata:
+  description: "Possible expression language (EL) injection detected"
+  remediation_message: |-
+    ## Description
+
+    Expression Language (EL) injection vulnerabilities occur when external input is used to construct EL statements without proper validation. This can result in the execution of malicious code.
+
+    ## Remediations
+
+    - **Do** validate all external input or dynamic values before incorporating them into EL statements. This step is crucial to prevent EL injection attacks.
+
+    ## References
+
+    - [OWASP Expression Language Injection](https://owasp.org/www-community/vulnerabilities/Expression_Language_Injection)
+  cwe_id:
+    - 917
+  id: java_lang_expression_language_injection
+  documentation_url: https://docs.bearer.com/reference/rules/java_lang_expression_language_injection

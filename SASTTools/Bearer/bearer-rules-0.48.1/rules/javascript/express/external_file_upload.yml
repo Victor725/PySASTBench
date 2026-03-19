@@ -1,0 +1,58 @@
+imports:
+  - javascript_shared_common_user_input
+patterns:
+  - pattern: res.sendFile($<USER_INPUT>)
+    filters:
+      - variable: USER_INPUT
+        detection: javascript_shared_common_user_input
+        scope: result
+  - pattern: res.sendFile($<_>, $<OPTIONS>$<...>)
+    filters:
+      - not:
+          variable: OPTIONS
+          detection: javascript_express_external_file_upload_root_option_not_user_input
+          scope: cursor
+  - pattern: res.sendFile($<_>, $<USER_INPUT>$<...>)
+    filters:
+      - variable: USER_INPUT
+        detection: javascript_shared_common_user_input
+        scope: result
+languages:
+  - javascript
+auxiliary:
+  - id: javascript_express_external_file_upload_root_option_not_user_input
+    patterns:
+      - pattern: |
+          { root: $<ROOT_VALUE> }
+        filters:
+          - not:
+              variable: ROOT_VALUE
+              detection: javascript_shared_common_user_input
+              scope: result
+metadata:
+  description: Unsanitized user input in HTTP send file request
+  remediation_message: |-
+    ## Description
+
+    Using unsanitized user input in the sendFile API call exposes your application to path manipulation attacks. This vulnerability allows attackers to access files and resources they shouldn't be able to, by manipulating file paths in requests.
+
+    ## Remediations
+
+    - **Do** set the `root` option to an absolute path to a directory when using `sendFile`. This confines the accessible files to a specific directory, preventing attackers from accessing files outside of this directory.
+      ```javascript
+      app.post("/upload", (req, res) => {
+        var options = {
+          root: path.join(__dirname, "upload")
+        };
+        res.sendFile(req.params.filename, options);
+      });
+      ```
+
+    ## References
+
+    - [Express sendFile API reference](http://expressjs.com/en/5x/api.html#res.sendFile)
+  cwe_id:
+    - 73
+  id: "javascript_express_external_file_upload"
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_express_external_file_upload
+severity: high

@@ -1,0 +1,50 @@
+imports:
+  - javascript_shared_third_parties_cryptojs_init
+  - javascript_shared_common_datatype
+patterns:
+  - pattern: |
+      $<CRYPTOJS_INIT>.DES.encrypt($<OPTIONAL_DATA_TYPE>, $<_>)
+    filters:
+      - variable: CRYPTOJS_INIT
+        detection: javascript_shared_third_parties_cryptojs_init
+        scope: cursor
+      - either:
+          - variable: OPTIONAL_DATA_TYPE
+            detection: javascript_shared_common_datatype
+            scope: result
+          - not:
+              variable: OPTIONAL_DATA_TYPE
+              detection: javascript_shared_common_datatype
+              scope: result
+languages:
+  - javascript
+skip_data_types:
+  - "Unique Identifier"
+  - "Passwords" # see javascript_weak_password_encryption
+metadata:
+  description: "Usage of weak encryption algorithm (DES)"
+  remediation_message: |-
+    ## Description
+
+    Your code is at risk due to the use of DES (Data Encryption Standard), a weak encryption algorithm. This vulnerability can lead to data breaches and compromises your security measures.
+
+    ## Remediations
+
+    - **Do not** use DES as it is outdated and vulnerable to attacks. Its use can significantly weaken your application's security.
+    - **Do** opt for stronger encryption algorithms, such as AES (Advanced Encryption Standard), to ensure the confidentiality and integrity of your data.
+      ```javascript
+      const crypto = require("crypto");
+
+      const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
+      const encrypted = cipher.update("my secret message", "utf8");
+      ```
+
+    ## References
+
+    - [NodeJS Crypto Module](https://nodejs.org/api/crypto.html)
+  cwe_id:
+    - 327
+  id: javascript_lang_weak_encryption_des
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_lang_weak_encryption
+  cloud_code_suggestions: true
+severity: high

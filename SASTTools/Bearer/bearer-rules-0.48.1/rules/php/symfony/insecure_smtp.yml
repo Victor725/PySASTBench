@@ -1,0 +1,36 @@
+patterns:
+  - pattern: $<STRING>;
+    filters:
+      - variable: STRING
+        string_regex: "smtps?://.*[\\?&]verify_peer=(0|false)"
+languages:
+  - php
+metadata:
+  description: "Usage of insecure SMTP connection"
+  remediation_message: |-
+    ## Description
+
+    An insecure SMTP connection can expose transmitted data to unauthorized access. This rule identifies if SMTP settings are configured to enforce secure connections.
+
+    ## Remediations
+
+    - **Do** enable SSL encryption in your SMTP configuration to secure the connection. This prevents unauthorized access to the data being transmitted.
+      ```php
+      return static function (ContainerConfigurator $container): void {
+        $container->extension('framework', [
+          'mailer' => [
+            'dsn' => "foo+smtp://wherever?verify_peer=true",
+          ],
+        ]);
+      };
+      ```
+
+    ## References
+
+    - [OWASP insecure transport](https://owasp.org/www-community/vulnerabilities/Insecure_Transport)
+  cwe_id:
+    - 319
+  id: php_symfony_insecure_smtp
+  documentation_url: https://docs.bearer.com/reference/rules/php_symfony_insecure_smtp
+  cloud_code_suggestions: true
+severity: critical

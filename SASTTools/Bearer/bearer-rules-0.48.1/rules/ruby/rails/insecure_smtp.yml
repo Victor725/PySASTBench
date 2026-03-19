@@ -1,0 +1,42 @@
+patterns:
+  - |
+    Rails.application.configure do
+      config.action_mailer.smtp_settings = {
+        $<!>openssl_verify_mode: OpenSSL::SSL::VERIFY_NONE
+      }
+    end
+  - |
+    Rails.application.configure do
+      config.action_mailer.smtp_settings = {
+        $<!>openssl_verify_mode: "none"
+      }
+    end
+languages:
+  - ruby
+metadata:
+  description: "Usage of insecure SMTP connection"
+  remediation_message: |-
+    ## Description
+
+    Using an insecure SMTP connection exposes your data to interception by unauthorized parties. Alwats check that your application's SMTP settings enforce secure connections.
+
+    ## Remediations
+
+    - **Do** enable SSL encryption in your SMTP settings to secure the connection. For Ruby on Rails' ActionMailer, configure as follows:
+      ```ruby
+      config.action_mailer.smtp_settings = {
+        ...
+        ssl: true
+      }
+      ```
+
+    ## References
+
+    - [Ruby on Rails configuring Action Mailer](https://guides.rubyonrails.org/configuring.html#configuring-action-mailer)
+    - [OWASP insecure transport](https://owasp.org/www-community/vulnerabilities/Insecure_Transport)
+  cwe_id:
+    - 319
+  id: ruby_rails_insecure_smtp
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_rails_insecure_smtp
+  cloud_code_suggestions: true
+severity: critical

@@ -1,0 +1,39 @@
+imports:
+  - java_shared_lang_instance
+patterns:
+  - pattern: $<COOKIE>.setHttpOnly($<FALSE>)
+    filters:
+      - variable: COOKIE
+        detection: java_shared_lang_instance
+        scope: cursor
+        filters:
+          - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+            regex: \A(javax\.servlet\.http\.)?Cookie\z
+      - variable: "FALSE"
+        detection: java_lang_cookie_with_http_only_false_false
+        scope: cursor
+auxiliary:
+  - id: java_lang_cookie_with_http_only_false_false
+    patterns:
+      - "false;"
+languages:
+  - java
+metadata:
+  description: Permissive HTTP Only option in cookie configuration
+  remediation_message: |-
+    ## Description
+
+    Leaving the HTTP Only option in cookie configuration unset or false can expose your application to attacks by allowing client-side scripts to access cookie values. This vulnerability can lead to unauthorized access or exploits.
+
+    ## Remediations
+
+    - **Do** set `HttpOnly` to `true` for cookies to prevent client-side scripts from accessing the cookie values. This step is crucial for enhancing the security of your application by limiting access to cookie data.
+      ```java
+      cookie.setHttpOnly(true);
+      ```
+  cwe_id:
+    - 1004
+  id: java_lang_cookie_with_http_only_false
+  documentation_url: https://docs.bearer.com/reference/rules/java_lang_cookie_with_http_only_false
+  cloud_code_suggestions: true
+severity: medium

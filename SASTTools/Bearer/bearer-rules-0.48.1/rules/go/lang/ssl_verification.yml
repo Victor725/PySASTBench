@@ -1,0 +1,45 @@
+patterns:
+  - pattern: $<_>.InsecureSkipVerify = $<TRUTHY>
+    filters:
+      - variable: TRUTHY
+        detection: go_lang_ssl_verification_true
+        scope: result
+  - pattern: |
+      $<TLS>.Config{$<...>$<!>InsecureSkipVerify: $<TRUTHY>$<...>}
+    filters:
+      - variable: TLS
+        detection: go_lang_ssl_verification_init
+        scope: cursor
+      - variable: TRUTHY
+        detection: go_lang_ssl_verification_true
+        scope: result
+auxiliary:
+  - id: go_lang_ssl_verification_true
+    patterns:
+      - "true"
+  - id: go_lang_ssl_verification_init
+    patterns:
+      - import $<!>"crypto/tls"
+      - |
+        import (
+          $<!>"crypto/tls"
+        )
+languages:
+  - go
+metadata:
+  description: "Missing SSL certificate verification"
+  remediation_message: |-
+    ## Description
+
+    Your application's security is compromised if it fails to verify SSL certificates. This vulnerability occurs when your application communicates over HTTPS without validating the authenticity of the SSL certificate presented by the server. It exposes sensitive data to interception by attackers.
+
+    ## Remediations
+
+    - **Do not** disable SSL certificate validation in your HTTP client. Disabling it makes your application vulnerable to Man-in-the-Middle (MitM) attacks.
+    - **Do** ensure that your HTTP client is configured to verify both the SSL certificate's validity and the hostname. This step is crucial for establishing a secure connection.
+
+  cwe_id:
+    - 295
+  id: go_lang_ssl_verification
+  documentation_url: https://docs.bearer.com/reference/rules/go_lang_ssl_verification
+severity: high

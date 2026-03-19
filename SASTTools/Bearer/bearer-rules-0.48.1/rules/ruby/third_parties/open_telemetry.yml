@@ -1,0 +1,63 @@
+imports:
+  - ruby_shared_common_datatype
+patterns:
+  - pattern: |
+      $<VAR>.$<METHOD>($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: VAR
+        detection: open_telemetry_current_span
+        scope: cursor
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+      - variable: METHOD
+        values:
+          - add_event
+          - add_attributes
+          - set_attribute
+          - record_exception
+  - pattern: |
+      $<_>.in_span($<_>, $<...>$<DATA_TYPE>$<...>)$<...>
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      $<VAR>.status = OpenTelemetry::Trace::Status.error($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: VAR
+        detection: open_telemetry_current_span
+        scope: cursor
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+languages:
+  - ruby
+auxiliary:
+  - id: open_telemetry_current_span
+    patterns:
+      - |
+        OpenTelemetry::Trace.current_span
+      - |
+        $<_>.in_span() { |$<!>$<_:identifier>| }
+skip_data_types:
+  - "Unique Identifier"
+metadata:
+  description: "Leakage of sensitive data to OpenTelemetry"
+  remediation_message: |
+    ## Description
+
+    Leaking sensitive data to third parties like OpenTelemetry is a common cause of data leaks and can lead to data breaches.
+
+    ## Remediations
+
+    - **Do** ensure all sensitive data is removed when sending data to third parties like OpenTelemetry.
+
+    ## References
+    - [OpenTelemetry Docs](https://opentelemetry.io/docs/)
+  cwe_id:
+    - 201
+  id: ruby_third_parties_open_telemetry
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_third_parties_open_telemetry
+  cloud_code_suggestions: true
+severity: medium

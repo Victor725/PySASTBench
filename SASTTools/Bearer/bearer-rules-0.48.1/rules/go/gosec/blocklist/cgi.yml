@@ -1,0 +1,35 @@
+patterns:
+  - pattern: |
+      import $<!>"net/http/cgi"
+  - pattern: |
+      import (
+        $<!>"net/http/cgi"
+      )
+languages:
+  - go
+metadata:
+  description: Usage of vulnerable CGI package
+  remediation_message: |-
+    ## Description
+
+    The `net/http/cgi` package in Go versions before 1.6.3 is vulnerable to the Httpoxy attack. This vulnerability, identified as CVE-2016-5386, occurs because of how CGI and FastCGI protocols manage certain environment variables. Attackers can exploit this to intercept and redirect outgoing HTTP requests from the web application.
+
+    ## Remediations
+
+    - **Do** update your Go version to 1.6.3 or later to mitigate this vulnerability.
+    - **Do** opt for alternative packages, like the standard `net/http` library, for handling HTTP requests that do not use the CGI protocol.
+    - **Do not** use the `net/http/cgi` package if your Go version is older than 1.6.3, as it is vulnerable to the Httpoxy attack.
+      ```go
+      import "net/http/cgi"
+      ```
+    - **Do** ensure that environment variables like `HTTP_PROXY` are not unintentionally exposed, as this can be leveraged for Httpoxy attacks.
+
+    ## References
+
+    - [Httpoxy.org](https://httpoxy.org/)
+
+  cwe_id:
+    - 1395
+  id: go_gosec_blocklist_cgi
+  documentation_url: https://docs.bearer.com/reference/rules/go_gosec_blocklist_cgi
+severity: medium

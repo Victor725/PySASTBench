@@ -1,0 +1,41 @@
+languages:
+  - php
+imports:
+  - php_shared_lang_insecure_url
+patterns:
+  - pattern: new WebSocket($<INSECURE_URL>$<...>)
+    filters:
+      - variable: INSECURE_URL
+        detection: php_shared_lang_insecure_url
+        scope: cursor
+  - pattern: new WebSocket\Client($<INSECURE_URL>$<...>)
+    filters:
+      - variable: INSECURE_URL
+        detection: php_shared_lang_insecure_url
+        scope: cursor
+severity: critical
+metadata:
+  description: "Usage of insecure websocket connection"
+  remediation_message: |-
+    ## Description
+
+    Using insecure websocket connections can compromise data security. This vulnerability arises when applications connect to APIs without SSL, making the data susceptible to interception and manipulation.
+
+    ## Remediations
+
+    - **Do not** use unsecured websocket connections. These connections lack encryption, putting data at risk.
+      ```php
+      $client = new Client('ws://insecure-api.com') // unsafe
+      ```
+    - **Do** ensure all websocket connections are secured with SSL. This encrypts the data, protecting it from unauthorized access.
+      ```php
+      $client = new Client('wss://secure-api.com')
+      ```
+
+    ## References
+
+    - [OWASP insecure transport](https://owasp.org/www-community/vulnerabilities/Insecure_Transport)
+  cwe_id:
+    - 319
+  id: php_lang_websocket_insecure
+  documentation_url: https://docs.bearer.com/reference/rules/php_lang_websocket_insecure

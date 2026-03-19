@@ -1,0 +1,125 @@
+imports:
+  - java_shared_lang_instance
+  - java_shared_lang_external_input
+patterns:
+  - pattern: |
+      $<CONNECTION>.$<METHOD>($<EXTERNAL_INPUT>$<...>);
+    filters:
+      - variable: CONNECTION
+        detection: java_lang_sqli_connection
+        scope: cursor
+      - variable: METHOD
+        values:
+          - nativeSQL
+          - prepareCall
+          - prepareStatement
+      - variable: EXTERNAL_INPUT
+        detection: java_shared_lang_external_input
+        scope: result
+  - pattern: |
+      $<STATEMENT>.$<METHOD>($<EXTERNAL_INPUT>$<...>);
+    filters:
+      - variable: STATEMENT
+        detection: java_lang_sqli_statement
+        scope: cursor
+      - variable: METHOD
+        values:
+          - addBatch
+          - execute
+          - executeLargeUpdate
+          - executeQuery
+          - executeUpdate
+      - variable: EXTERNAL_INPUT
+        detection: java_shared_lang_external_input
+        scope: result
+  - pattern: |
+      $<ENTITY_MANAGER>.$<METHOD>($<EXTERNAL_INPUT>$<...>);
+    filters:
+      - variable: ENTITY_MANAGER
+        detection: java_lang_sqli_entity_manager
+        scope: cursor
+      - variable: METHOD
+        values:
+          - createNativeQuery
+          - createQuery
+      - variable: EXTERNAL_INPUT
+        detection: java_shared_lang_external_input
+        scope: result
+auxiliary:
+  - id: java_lang_sqli_connection
+    patterns:
+      - pattern: $<CONNECTION_INSTANCE>;
+        filters:
+          - variable: CONNECTION_INSTANCE
+            detection: java_shared_lang_instance
+            scope: cursor
+            filters:
+              - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+                regex: \A(java\.sql\.)?Connection\z
+      - $<_>.getConnection();
+      # fallback
+      - con;
+      - conn;
+      - connection;
+  - id: java_lang_sqli_statement
+    patterns:
+      - pattern: $<STATEMENT_INSTANCE>;
+        filters:
+          - variable: STATEMENT_INSTANCE
+            detection: java_shared_lang_instance
+            scope: cursor
+            filters:
+              - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+                regex: \A(java\.sql\.)?Statement\z
+      - $<_>.createStatement();
+      # fallback
+      - stmt;
+      - statement;
+  - id: java_lang_sqli_entity_manager
+    patterns:
+      - pattern: $<ENTITY_INSTANCE>;
+        filters:
+          - variable: ENTITY_INSTANCE
+            detection: java_shared_lang_instance
+            scope: cursor
+            filters:
+              - variable: JAVA_SHARED_LANG_INSTANCE_TYPE
+                regex: \A(javax\.persistence\.)?EntityManager\z
+      - $<_>.createEntityManager();
+      # fallback
+      - em;
+      - entityManager;
+languages:
+  - java
+trigger:
+  match_on: presence
+metadata:
+  description: "Unsanitized external input in SQL query"
+  remediation_message: |-
+    ## Description
+
+    Using unsanitized data, such as user input or request data, or externally influenced data passed to a function, in SQL query exposes your application to SQL injection attacks. This vulnerability arises when externally controlled data is directly included in SQL statements without proper sanitation, allowing attackers to manipulate queries and access or modify data.
+
+    ## Remediations
+
+    - **Do not** include unsanitized input in SQL queries. This practice can lead to SQL injection vulnerabilities.
+      ```java
+      Statement stmt = conn.createStatement();
+      ResultSet rs = stmt.executeQuery("select name from users where id='" + uri.getQueryParameter("user_id") + "'"));
+      ```
+    - **Do** use prepared statements for SQL queries to safely include external input.
+      ```java
+      PreparedStatement myStmt = myCon.prepareStatement("select * from students where age > ? and name = ?");
+      myStmt.setInt(1, uri.getQueryParameter("age"));
+      myStmt.setString(2, uri.getQueryParameter("name"));
+      ```
+
+    ## References
+
+    - [OWASP SQL injection explained](https://owasp.org/www-community/attacks/SQL_Injection)
+    - [OWASP SQL injection prevention cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html)
+  cwe_id:
+    - 89
+  id: "java_lang_sqli"
+  documentation_url: https://docs.bearer.com/reference/rules/java_lang_sqli
+severity: critical

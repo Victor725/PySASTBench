@@ -1,0 +1,45 @@
+patterns:
+  - pattern: |
+      {
+        cookie: $<INSECURE_COOKIE>
+      }
+    filters:
+      - variable: INSECURE_COOKIE
+        detection: javascript_express_insecure_cookie_config
+        scope: result
+  - pattern: |
+      cookieSession($<INSECURE_COOKIE>)
+    filters:
+      - variable: INSECURE_COOKIE
+        detection: javascript_express_insecure_cookie_config
+        scope: result
+auxiliary:
+  - id: javascript_express_insecure_cookie_config
+    patterns:
+      - pattern: |
+          { secure: false }
+languages:
+  - javascript
+metadata:
+  description: Missing Secure option in cookie configuration
+  remediation_message: |-
+    ## Description
+
+    When a cookie lacks the Secure attribute, it can be transmitted over an unencrypted connection, making it vulnerable to interception by unauthorized parties. Enabling the Secure option ensures that cookies are only sent over HTTPS, enhancing the security of data in transit.
+
+    ## Remediations
+
+    - **Do** set the `secure` attribute of cookies to `true`. This action mandates that cookies are sent only over HTTPS, safeguarding them from potential eavesdropping.
+      ```javascript
+      cookie({ secure: true });
+      ```
+
+    ## References
+
+    - [Express Security Best Practices](https://expressjs.com/en/advanced/best-practice-security.html#use-cookies-securely)
+  cwe_id:
+    - 614
+  id: javascript_express_insecure_cookie
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_express_insecure_cookie
+  cloud_code_suggestions: true
+severity: medium

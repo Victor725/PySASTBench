@@ -1,0 +1,42 @@
+imports:
+  - php_shared_lang_user_input
+patterns:
+  - pattern: |
+      header($<VALUE>$<...>)
+    filters:
+      - variable: VALUE
+        string_regex: (?i)\A(x-frame-options|content-security-policy)
+      - variable: VALUE
+        detection: php_shared_lang_user_input
+        scope: result
+languages:
+  - php
+metadata:
+  description: "Unsanitized user input in UI"
+  remediation_message: |-
+    ## Description
+
+    Incorporating unsanitized user input to configure the X-Frame-Options or Content-Security-Policy HTTP headers exposes your application to UI redress attacks, commonly known as clickjacking. This vulnerability can be exploited to deceive users into performing unintended actions on your website.
+
+    ## Remediations
+
+    - **Do** set the X-Frame-Options header to "DENY" to prevent your website from being framed by potentially malicious sites.
+      ```php
+      header("X-Frame-Options: DENY");
+      ```
+    - **Do** configure the Content-Security-Policy header with "frame-ancestors 'none'" to disallow embedding your content in iframes across all sites.
+      ```php
+      header("Content-Security-Policy: frame-ancestors 'none'");
+      ```
+    - **Do not** use user input directly to set these headers without proper sanitization and validation.
+
+    ## References
+
+    - [OWASP Clickjacking attack explained](https://owasp.org/www-community/attacks/Clickjacking)
+    - [OWASP Clickjacking defense cheat sheet](https://cheatsheetseries.owasp.org/cheatsheets/Clickjacking_Defense_Cheat_Sheet.html)
+  cwe_id:
+    - 1021
+  id: "php_lang_ui_redress"
+  documentation_url: https://docs.bearer.com/reference/rules/php_lang_ui_redress
+  cloud_code_suggestions: true
+severity: high

@@ -1,0 +1,51 @@
+imports:
+  - javascript_shared_common_datatype
+patterns:
+  - pattern: |
+      $<INSTANCE>.$<METHOD>($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: INSTANCE
+        detection: javascript_third_parties_segment_instance
+        scope: cursor
+      - variable: METHOD
+        values:
+          - alias
+          - identify
+          - group
+          - page
+          - track
+      - variable: DATA_TYPE
+        detection: javascript_shared_common_datatype
+        scope: result
+auxiliary:
+  - id: javascript_third_parties_segment_instance
+    patterns:
+      - |
+        new Analytics()
+      - |
+        AnalyticsBrowser.load()
+languages:
+  - javascript
+skip_data_types:
+  - "Unique Identifier"
+metadata:
+  description: "Leakage of sensitive data to Segment"
+  remediation_message: |
+    ## Description
+
+    Leaking sensitive data to third-party analytics tools like Segment is a common cause of data leaks and can lead to data breaches.
+
+    ## Remediations
+
+    - **Do** ensure all sensitive data is removed when sending data to third-party analytics libraries like Segment.
+
+    ## References
+    - [Segment Node.js docs](https://segment.com/docs/connections/sources/catalog/libraries/server/node/)
+    - [Segment JavaScript docs](https://segment.com/docs/connections/sources/catalog/libraries/website/javascript/)
+  cwe_id:
+    - 201
+  associated_recipe: Segment
+  id: javascript_third_parties_segment
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_third_parties_segment
+  cloud_code_suggestions: true
+severity: medium

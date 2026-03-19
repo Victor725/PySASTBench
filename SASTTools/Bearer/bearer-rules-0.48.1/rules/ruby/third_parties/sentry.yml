@@ -1,0 +1,169 @@
+imports:
+  - ruby_shared_common_datatype
+patterns:
+  - pattern: |
+      Sentry::Breadcrumb.new($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      Sentry.capture_message($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      Sentry.init do |$<CONFIG:identifier>|
+        $<CONFIG>.before_breadcrumb = lambda do |$<BREADCRUMB:identifier>, $<_:identifier>|
+          $<!>$<BREADCRUMB>.message = $<DATA_TYPE>
+        end
+      end
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      Sentry.set_context($<_>, $<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      Sentry.configure_scope do |$<SCOPE:identifier>|
+        $<!>$<SCOPE>.set_context($<_>, $<...>$<DATA_TYPE>$<...>)
+      end
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      Sentry.with_scope do |$<SCOPE:identifier>|
+        $<!>$<SCOPE>.set_context($<_>, $<...>$<DATA_TYPE>$<...>)
+      end
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      Sentry.configure_scope do |$<SCOPE:identifier>|
+        $<!>$<SCOPE>.set_extra($<_>, $<DATA_TYPE>)
+      end
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      Sentry.with_scope do |$<SCOPE:identifier>|
+        $<!>$<SCOPE>.set_extra($<_>, $<DATA_TYPE>)
+      end
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      Sentry.set_extras($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      Sentry.configure_scope do |$<SCOPE:identifier>|
+        $<!>$<SCOPE>.set_extras($<...>$<DATA_TYPE>$<...>)
+      end
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      Sentry.with_scope do |$<SCOPE:identifier>|
+        $<!>$<SCOPE>.set_extras($<...>$<DATA_TYPE>$<...>)
+      end
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      Sentry.configure_scope do |$<SCOPE:identifier>|
+        $<!>$<SCOPE>.set_tag($<_>, $<DATA_TYPE>)
+      end
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      Sentry.with_scope do |$<SCOPE:identifier>|
+        $<!>$<SCOPE>.set_tag($<_>, $<DATA_TYPE>)
+      end
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      Sentry.set_tags($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      Sentry.configure_scope do |$<SCOPE:identifier>|
+        $<!>$<SCOPE>.set_tags($<...>$<DATA_TYPE>$<...>)
+      end
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      Sentry.with_scope do |$<SCOPE:identifier>|
+        $<!>$<SCOPE>.set_tags($<...>$<DATA_TYPE>$<...>)
+      end
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      Sentry.set_user($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      Sentry.configure_scope do |$<SCOPE:identifier>|
+        $<!>$<SCOPE>.set_user($<...>$<DATA_TYPE>$<...>)
+      end
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+  - pattern: |
+      Sentry.with_scope do |$<SCOPE:identifier>|
+        $<!>$<SCOPE>.set_user($<...>$<DATA_TYPE>$<...>)
+      end
+    filters:
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+languages:
+  - ruby
+skip_data_types:
+  - "Unique Identifier"
+metadata:
+  description: "Leakage of sensitive data to Sentry"
+  remediation_message: |
+    ## Description
+
+    Leaking sensitive data to third-party loggers like Sentry is a common cause of data leaks and can lead to data breaches.
+
+    ## Remediations
+
+    - **Do** ensure all sensitive data is removed when sending data to third-party loggers like Sentry.
+
+    ## References
+    - [Sentry Docs](https://docs.sentry.io/)
+  cwe_id:
+    - 201
+  associated_recipe: Sentry
+  id: ruby_third_parties_sentry
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_third_parties_sentry
+  cloud_code_suggestions: true
+severity: medium

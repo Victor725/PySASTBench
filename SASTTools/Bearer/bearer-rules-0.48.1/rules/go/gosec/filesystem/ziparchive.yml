@@ -1,0 +1,70 @@
+patterns:
+  - pattern: |
+      filepath.Join($<...>$<READER>$<...>)
+    filters:
+      - either:
+          - variable: READER
+            detection: go_gosec_filesystem_ziparchive_reader
+            scope: result
+          - variable: READER
+            detection: go_gosec_filesystem_ziparchive_file_name
+            scope: result
+auxiliary:
+  - id: go_gosec_filesystem_ziparchive_file_name
+    patterns:
+      - pattern: $<FILE>.Name
+        filters:
+          - either:
+              - variable: FILE
+                detection: go_gosec_filesystem_ziparchive_reader_file
+                scope: result
+              - variable: FILE
+                detection: go_gosec_filesystem_ziparchive_zip_file
+                scope: result
+  - id: go_gosec_filesystem_ziparchive_reader_file
+    patterns:
+      - pattern: $<READER>.File
+        filters:
+          - variable: READER
+            detection: go_gosec_filesystem_ziparchive_reader
+            scope: result
+  - id: go_gosec_filesystem_ziparchive_reader
+    patterns:
+      - zip.OpenReader()
+  - id: go_gosec_filesystem_ziparchive_zip_file
+    patterns:
+      - pattern: func $<_>($<...>$<!>$<_> *zip.File$<...>) {}
+languages:
+  - go
+metadata:
+  description: "Missing protection against 'Zip Slip' path traversal"
+  remediation_message: |-
+    ## Description
+
+    Your application is vulnerable to a 'Zip Slip' path traversal attack when it extracts files from archives that are not trusted. This occurs because malicious archives may contain files with relative paths aiming to escape the intended directory. As a result, these files could overwrite important system files or be placed in sensitive locations, leading to security breaches.
+
+    ## Remediations
+
+    - **Do** implement checks to limit the zip archive's size. This prevents 'Zip Bombs', which are archives that decompress into sizes much larger than expected. For example, use `file.UncompressedSize64` to check the size of a file within a ZIP file.
+    - **Do** generate unique filenames for extracted files or sanitize the original filenames to avoid overwriting files intentionally. You can use `filepath.Base`, for example, to extract the filename from a path and discard any directory information.
+      ```go
+      name := filepath.Base(file.Name)
+      ```
+    - **Do** validate the paths of extracted files to ensure they are written to a specified, trusted directory without traversing outside of it.
+    - **Do** process only regular files. Exclude symbolic links to prevent indirect file read/write vulnerabilities.
+      ```go
+      if !file.Mode().IsRegular() {
+        log.Fatal("non-regular file: %s\n", file.Name)
+      }
+      ```
+    - **Do** ensure directories within the zip archive are processed securely by cleaning the path and strictly validating it against the base path.
+
+    ## References
+
+    - [Go Documentation: archive/zip package](https://pkg.go.dev/archive/zip)
+
+  cwe_id:
+    - 22
+  id: go_gosec_filesystem_ziparchive
+  documentation_url: https://docs.bearer.com/reference/rules/go_gosec_filesystem_ziparchive
+severity: high

@@ -1,0 +1,38 @@
+patterns:
+  - pattern: $<CIPHER>.getInstance($<ALGORITHM>)
+    filters:
+      - variable: CIPHER
+        regex: \A(javax\.crypto\.)?Cipher\z
+      - variable: ALGORITHM
+        string_regex: \/CBC\/PKCS5Padding\z
+      - not:
+          variable: ALGORITHM
+          string_regex: /(CCM|CWC|OCB|EAX|GCM)/
+      - not:
+          variable: ALGORITHM
+          string_regex: \A(RSA|ECIES)
+languages:
+  - java
+metadata:
+  description: "Missing support for integrity check"
+  remediation_message: |-
+    ## Description
+
+    If a protocol does not include integrity checks ("checksums"), it is impossible to determine whether or not an attacker has interfered with or manipulated the transmitted data. This makes it difficult to confirm whether or not the transmitted data has been tampered with or altered by unauthorized parties (Man-in-the-Middle attack).
+
+    ## Remediations
+
+    - **Do** use encryption schemes that include integrity checks to ensure the data has not been modified during transmission.
+      ```java
+      Cipher c = Cipher.getInstance("AES/GCM/PKCS5Padding");
+      ```
+
+    ## References
+
+    - [Java Cipher class](https://docs.oracle.com/en/java/javase/20/docs/api/java.base/javax/crypto/Cipher.html)
+  cwe_id:
+    - 353
+  id: java_lang_missing_integrity_check
+  documentation_url: https://docs.bearer.com/reference/rules/java_lang_missing_integrity_check
+  cloud_code_suggestions: true
+severity: medium

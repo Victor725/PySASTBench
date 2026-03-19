@@ -1,0 +1,54 @@
+patterns:
+  - pattern: |
+      os.$<METHOD>($<...>$<MASK>)
+    filters:
+      - variable: METHOD
+        values:
+          - Chmod
+          - OpenFile
+          - WriteFile
+      - variable: MASK
+        detection: go_gosec_file_permissions_file_perm_mask
+        scope: result
+auxiliary:
+  - id: go_gosec_file_permissions_file_perm_mask
+    patterns:
+      - pattern: $<MASK>
+        filters:
+          - either:
+              - variable: MASK
+                regex: \A0o?7
+              - variable: MASK
+                regex: \A0o?\d[1-7]
+              - variable: MASK
+                regex: \A0o?\d\d[1-7]
+languages:
+  - go
+metadata:
+  description: "Permissive file assignment"
+  remediation_message: |-
+    ## Description
+
+    Setting overly permissive file permissions exposes your system to risks such as unauthorized access, data tampering, and potential system compromise. This vulnerability arises when files are created or updated without adequately restrictive permissions, allowing unauthorized users to read, modify, or execute files.
+
+    ## Remediations
+
+    - **Do not** use overly permissive file permissions, such as `0777`, which grants read, write, and execute permissions to all users.
+    - **Do** set file permissions to restrict access appropriately:
+      - `0400` for read-only access by the file's owner.
+      - `0200` for write-only access by the file's owner.
+      - `0600` for read and write access by the file's owner, suitable for files that the application needs to read from and write to.
+    - **Do** use Go's `os` package to manage file permissions effectively. For example, use `os.OpenFile` with appropriate permission flags such as 0600.
+      ```go
+        f, err := os.OpenFile("file.txt", os.O_CREATE|os.O_WRONLY, 0600)
+        ...
+      ```
+    - **Do** verify file permissions after creation or update to ensure they are set as intended.
+    - **Do** consider setting umask to a secure default, if your application creates multiple files, to ensure that files are created with safe default permissions.
+    - **Do** regularly review and audit file permissions in your system to ensure they adhere to the principle of least privilege, minimizing the access level to what is strictly necessary for operational functionality.
+
+  cwe_id:
+    - 732
+  id: go_gosec_file_permissions_file_perm
+  documentation_url: https://docs.bearer.com/reference/rules/go_gosec_file_permissions_file_perm
+severity: high

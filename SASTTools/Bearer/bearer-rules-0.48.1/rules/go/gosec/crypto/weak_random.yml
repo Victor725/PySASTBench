@@ -1,0 +1,62 @@
+patterns:
+  - pattern: $<RAND>.$<METHOD>()
+    filters:
+      - variable: METHOD
+        values:
+          - Float32
+          - Float64
+          - Int31
+          - Int
+          - Intn
+          - Int31n
+          - Int63
+          - Int63n
+          - NormalFloat64
+          - Uint32
+          - Uint64
+      - either:
+          - variable: RAND
+            detection: go_gosec_crypto_weak_random_init
+            scope: cursor
+          - variable: RAND
+            detection: go_gosec_crypto_weak_random_import
+            scope: cursor
+auxiliary:
+  - id: go_gosec_crypto_weak_random_import
+    patterns:
+      - pattern: import $<!>"math/rand"
+      - pattern: |
+          import (
+            $<!>"math/rand"
+          )
+  - id: go_gosec_crypto_weak_random_init
+    patterns:
+      - pattern: $<RAND>.New()
+        filters:
+          - variable: RAND
+            detection: go_gosec_crypto_weak_random_import
+            scope: cursor
+languages:
+  - go
+metadata:
+  description: "Usage of weak Pseudo-Random Number Generator (PRNG)"
+  remediation_message: |-
+    ## Description
+
+    The `math/rand` package in Go generates pseudorandom numbers that are not secure for cryptographic purposes. These numbers can be predicted if the seed is known, posing a risk to the security of applications that use them for generating secrets, tokens, or other security-sensitive elements.
+
+    ## Remediations
+
+    - **Do** use `crypto/rand` instead of `math/rand` for generating random numbers in contexts where security is crucial. This ensures the randomness is cryptographically secure and unpredictable.
+    - **Do not** use `math/rand` for generating random numbers in cryptographic applications, including but not limited to key generation, authentication tokens, or security challenges.
+    - **Do not** initialize `math/rand` with predictable seeds, such as timestamps or other easily guessable values, if it is required to use `math/rand`.
+
+    ## References
+
+    - [crypto/rand package documentation](https://pkg.go.dev/crypto/rand)
+
+  cwe_id:
+    - 327
+  id: go_gosec_crypto_weak_random
+  documentation_url: https://docs.bearer.com/reference/rules/go_gosec_crypto_weak_random
+severity: high

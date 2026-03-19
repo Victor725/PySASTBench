@@ -1,0 +1,127 @@
+patterns:
+  - pattern: |
+      $<SERVER>
+    filters:
+      - variable: SERVER
+        detection: go_gosec_http_http_slowloris_net_http_init
+        scope: cursor_strict
+      - not:
+          either:
+            - variable: SERVER
+              detection: go_gosec_http_http_slowloris_http_slowloris_read_timeout
+              scope: cursor
+            - variable: SERVER
+              detection: go_gosec_http_http_slowloris_http_slowloris_read_header_timeout
+              scope: cursor
+  # FIXME: Switch to this once we have better CFG support
+  # - pattern: $<HTTP_INIT>.$<METHOD>()
+  #   filters:
+  #     - variable: HTTP_INIT
+  #       detection: go_gosec_http_http_slowloris_net_http_init
+  #       scope: result
+  #     - variable: METHOD
+  #       values:
+  #         - ListenAndServe
+  #         - ListenAndServeTLS
+  #         - Serve
+  #         - ServeTLS
+  # - pattern: $<HTTP_INIT>
+  #   filters:
+  #     - variable: HTTP_INIT
+  #       detection: go_gosec_http_http_slowloris_net_http_init
+  #       scope: cursor
+  #     - not:
+  #         either:
+  #           - variable: HTTP_INIT
+  #             detection: go_gosec_http_http_slowloris_http_slowloris_read_timeout
+  #             scope: cursor
+  #           - variable: HTTP_INIT
+  #             detection: go_gosec_http_http_slowloris_http_slowloris_read_header_timeout
+  #             scope: cursor
+auxiliary:
+  - id: go_gosec_http_http_slowloris_http_slowloris_read_timeout
+    patterns:
+      - pattern: |
+          $<HTTP>.Server{$<...>ReadTimeout: $<_>$<...>}
+        filters:
+          - variable: HTTP
+            detection: go_gosec_http_http_slowloris_net_http_import
+            scope: cursor
+      - pattern: |
+          &$<HTTP>.Server{$<...>ReadTimeout: $<_>$<...>}
+        filters:
+          - variable: HTTP
+            detection: go_gosec_http_http_slowloris_net_http_import
+            scope: cursor
+  - id: go_gosec_http_http_slowloris_http_slowloris_read_header_timeout
+    patterns:
+      - pattern: |
+          $<HTTP>.Server{$<...>ReadHeaderTimeout: $<_>$<...>}
+        filters:
+          - variable: HTTP
+            detection: go_gosec_http_http_slowloris_net_http_import
+            scope: cursor
+      - pattern: |
+          &$<HTTP>.Server{$<...>ReadHeaderTimeout: $<_>$<...>}
+        filters:
+          - variable: HTTP
+            detection: go_gosec_http_http_slowloris_net_http_import
+            scope: cursor
+  - id: go_gosec_http_http_slowloris_net_http_init
+    patterns:
+      - pattern: |
+          $<HTTP>.Server{$<...>}
+        filters:
+          - variable: HTTP
+            detection: go_gosec_http_http_slowloris_net_http_import
+            scope: cursor
+      - pattern: |
+          &$<HTTP>.Server{$<...>}
+        filters:
+          - variable: HTTP
+            detection: go_gosec_http_http_slowloris_net_http_import
+            scope: cursor
+  - id: go_gosec_http_http_slowloris_net_http_import
+    patterns:
+      - pattern: |
+          import $<!>"net/http"
+      - pattern: |
+          import (
+            $<!>"net/http"
+          )
+languages:
+  - go
+metadata:
+  description: "Missing protection against 'Slowloris' attack"
+  remediation_message: |-
+    ## Description
+
+    Your server configuration is missing the `ReadHeaderTimeout` setting, making it vulnerable to a type of Distributed Denial of Service (DDoS) attack known as a Slowloris attack. In such an attack, a hacker initiates many connections to your server, sending incomplete requests. Your server then keeps each connection open, waiting for the headers to be completed. This can lead to resource exhaustion, where your server cannot handle additional (legitimate) requests.
+
+    ## Remediations
+
+    - **Do not** use default serve functions like `http.ListenAndServe` and `http.Serve` in production environments. You cannot set timeouts for these functions, making the server vulnerable to attacks.
+      ```go
+      http.ListenAndServe(":8080", nil) // unsafe
+      ```
+    - **Do** create a custom `http.Server` object with configured timeouts to safeguard against resource exhaustion. For Slowloris attacks in particular, set `ReadHeaderTimeout` to an appropriate value to ensure that connections do not remain open indefinitely.
+      ```go
+      myServer := &http.Server{
+          Addr:             "localhost:8000",
+          ReadHeaderTimeout: 15 * time.Second,
+          ReadTimeout:      15 * time.Second,
+          WriteTimeout:     10 * time.Second,
+          IdleTimeout:      30 * time.Second,
+      }
+      ```
+
+    ## References
+
+    - [Configuring Timeouts in http.Server](https://pkg.go.dev/net/http#Server)
+    - [How to Set Request-Based Timeouts](https://pkg.go.dev/net/http#TimeoutHandler)
+    - [Understanding Slowloris Attacks](https://en.wikipedia.org/wiki/Slowloris_(computer_security))
+  cwe_id:
+    - 400
+  id: go_gosec_http_http_slowloris
+  documentation_url: https://docs.bearer.com/reference/rules/go_gosec_http_http_slowloris
+severity: high

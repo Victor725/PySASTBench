@@ -1,0 +1,56 @@
+imports:
+  - ruby_shared_common_datatype
+patterns:
+  - pattern: |
+      $<INDEX>.$<METHOD>($<DATA_TYPE>$<...>)
+    filters:
+      - variable: INDEX
+        detection: ruby_third_parties_algolia_index
+        scope: cursor
+      - variable: METHOD
+        values:
+          - save_object
+          - save_objects
+          - partial_update_object
+          - partial_update_objects
+          - replace_all_objects
+      - variable: DATA_TYPE
+        detection: ruby_shared_common_datatype
+        scope: result
+languages:
+  - ruby
+auxiliary:
+  - id: ruby_third_parties_algolia_client
+    patterns:
+      - |
+        Algolia::Search::Client.create()
+  - id: ruby_third_parties_algolia_index
+    patterns:
+      - pattern: |
+          $<CLIENT>.init_index()
+        filters:
+          - variable: CLIENT
+            detection: ruby_third_parties_algolia_client
+            scope: cursor
+skip_data_types:
+  - "Unique Identifier"
+metadata:
+  description: "Leakage of sensitive data to Algolia"
+  remediation_message: |
+    ## Description
+
+    Leaking sensitive data to third-party data tools like Algolia is a common cause of data leaks and can lead to data breaches.
+
+    ## Remediations
+
+    - **Do** ensure all sensitive data is removed when sending data to third-party services like Algolia.
+
+    ## References
+    - [Algolia docs](https://www.algolia.com/doc/)
+  cwe_id:
+    - 201
+  associated_recipe: Algolia
+  id: ruby_third_parties_algolia
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_third_parties_algolia
+  cloud_code_suggestions: true
+severity: medium

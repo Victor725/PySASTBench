@@ -1,0 +1,89 @@
+imports:
+  - php_shared_lang_datatype
+patterns:
+  - pattern: |
+      sha1($<DATA_TYPE>$<...>)
+    filters:
+      - either:
+          - variable: DATA_TYPE
+            detection: php_shared_lang_datatype
+            scope: result
+          - not:
+              variable: DATA_TYPE
+              detection: php_shared_lang_datatype
+              scope: result
+  - pattern: |
+      $<FUNCTION>($<ALGORITHM>, $<DATA_TYPE>$<...>)
+    filters:
+      - variable: FUNCTION
+        values:
+          - hash
+          - hash_hmac
+      - variable: ALGORITHM
+        string_regex: sha1
+      - either:
+          - variable: DATA_TYPE
+            detection: php_shared_lang_datatype
+            scope: result
+          - not:
+              variable: DATA_TYPE
+              detection: php_shared_lang_datatype
+              scope: result
+  - pattern: sha1_file()
+  - pattern: hash_update($<CONTEXT>, $<DATA_TYPE>)
+    filters:
+      - variable: CONTEXT
+        detection: php_lang_weak_hash_sha1_context
+        scope: cursor
+      - either:
+          - variable: DATA_TYPE
+            detection: php_shared_lang_datatype
+            scope: result
+          - not:
+              variable: DATA_TYPE
+              detection: php_shared_lang_datatype
+              scope: result
+  - pattern: $<FUNCTION>($<CONTEXT>$<...>)
+    filters:
+      - variable: FUNCTION
+        values:
+          - hash_update_file
+          - hash_update_stream
+      - variable: CONTEXT
+        detection: php_lang_weak_hash_sha1_context
+        scope: cursor
+auxiliary:
+  - id: php_lang_weak_hash_sha1_context
+    patterns:
+      - pattern: hash_init($<ALGORITHM>$<...>)
+        filters:
+          - variable: ALGORITHM
+            string_regex: sha1
+languages:
+  - php
+skip_data_types:
+  - "Unique Identifier"
+  - Passwords # see php_lang_weak_password_hash_sha1
+metadata:
+  description: "Usage of weak hashing library (SHA-1)"
+  remediation_message: |-
+    ## Description
+
+    Using a weak hashing library like SHA-1 increases the risk of data breaches. SHA-1 in particular is vulnerable to collision attacks, where two different inputs can produce the same hash value, compromising data integrity and security.
+
+    ## Remediations
+
+    - **Do not** use SHA-1 for hashing. It is considered weak and vulnerable to attacks.
+      ```php
+      $encrypted = sha1($input); // unsafe
+      ```
+    - **Do** opt for stronger hashing algorithms such as SHA-256 to enhance security.
+      ```php
+      $encrypted = hash('sha256', $input);
+      ```
+  cwe_id:
+    - 328
+  id: php_lang_weak_hash_sha1
+  documentation_url: https://docs.bearer.com/reference/rules/php_lang_weak_hash_sha1
+  cloud_code_suggestions: true
+severity: medium

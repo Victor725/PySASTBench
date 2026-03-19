@@ -1,0 +1,41 @@
+patterns:
+  - pattern: $<PERMISSIONS>.add($<OTHER_PERMISSION>);
+    filters:
+      - variable: PERMISSIONS
+        detection: java_lang_get_posix_file_permissions
+        scope: cursor
+      - variable: OTHER_PERMISSION
+        regex: ^(PosixFilePermission.)?OTHER_
+auxiliary:
+  - id: java_lang_get_posix_file_permissions
+    patterns:
+      - pattern: $<FILES>.getPosixFilePermissions();
+        filters:
+          - variable: FILES
+            regex: \A(java\.nio\.file\.)?Files\z
+languages:
+  - java
+severity: high
+metadata:
+  description: Usage of permissive file permission ('other')
+  remediation_message: |-
+    ## Description
+
+    Granting overly permissive file permissions, especially to 'other', poses a significant security risk by potentially exposing sensitive information to unauthorized users.
+
+    ## Remediations
+
+    - **Do** keep file permissions as restrictive as necessary. Opt for granting privileges to 'groups' rather than 'other' to minimize the risk of unauthorized access.
+      ```java
+      permissions.add(PosixFilePermission.GROUP_WRITE)
+      ```
+
+    ## References
+
+    - [Java Files class](https://docs.oracle.com/en/java/javase/20/docs/api/java.base/java/nio/file/Files.html)
+    - [Java PosixFilePermission enum](https://docs.oracle.com/en/java/javase/20/docs/api/java.base/java/nio/file/attribute/PosixFilePermission.html)
+  cwe_id:
+    - 732
+  id: "java_lang_file_permission_others"
+  documentation_url: https://docs.bearer.com/reference/rules/java_lang_file_permission_others
+  cloud_code_suggestions: true

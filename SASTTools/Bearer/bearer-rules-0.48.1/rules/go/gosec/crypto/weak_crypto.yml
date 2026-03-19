@@ -1,0 +1,34 @@
+patterns:
+  - des.NewCipher()
+  - des.NewTripleDESCipher()
+  - md5.New()
+  - md5.Sum()
+  - rc4.NewCipher()
+  - sha1.New()
+  - sha1.Sum()
+languages:
+  - go
+metadata:
+  description: "Usage of weak hashing library"
+  remediation_message: |-
+    ## Description
+
+    Your code uses a weak hashing library, which means it relies on cryptographic algorithms that are no longer secure. This vulnerability can lead to compromised data confidentiality and integrity, as it makes the data susceptible to unauthorized decryption and tampering.
+
+    ## Remediations
+
+    - **Do** replace weak or outdated algorithms with strong, modern alternatives. For encryption, use AES (Advanced Encryption Standard), and for hashing, opt for SHA-256 or higher.
+    - **Do** always use the latest versions of cryptographic libraries. These versions are more likely to use secure algorithms and settings by default.
+    - **Do not** use cryptographic algorithms that have been deprecated due to known vulnerabilities. Avoid MD5, SHA-1, or DES for any cryptographic operations.
+    - **Do not** attempt to create custom cryptographic solutions. Instead use well-reviewed and tested standard cryptographic libraries to ensure security.
+
+    ## References
+
+    - [NIST Cryptographic Standards and Guidelines](https://csrc.nist.gov/publications/sp)
+    - [Cryptography Coding Standard](https://cryptocoding.net/index.php/Coding_rules)
+
+  cwe_id:
+    - 327
+  id: go_gosec_crypto_weak_crypto
+  documentation_url: https://docs.bearer.com/reference/rules/go_gosec_crypto_weak_crypto
+severity: high

@@ -1,0 +1,53 @@
+patterns:
+  - pattern: "&$<ARG>"
+    filters:
+      - variable: ARG
+        detection: go_gosec_memory_memory_aliasing_range
+        scope: cursor
+      - not:
+          variable: ARG
+          detection: go_gosec_memory_memory_aliasing_range_return
+          scope: cursor
+auxiliary:
+  - id: go_gosec_memory_memory_aliasing_range_return
+    patterns:
+      - return $<...>&$<!>$<_>$<...>
+  - id: go_gosec_memory_memory_aliasing_range
+    patterns:
+      - pattern: |
+          for $<...>$<!>$<ARG>$<...> := range $<_> {}
+languages:
+  - go
+metadata:
+  description: Usage of single iteration variable in range loop
+  remediation_message: |-
+    ## Description
+
+    In Go, using the `for ... range` loop with a single iteration variable can lead to errors. This happens because the loop uses the same memory address for the iteration variable throughout its execution. When you store or use the address of this variable across different iterations, it can overwrite values unexpectedly. This issue is especially problematic in concurrent operations or when deferring functions inside the loop.
+
+    ## Remediations
+
+    - **Do** create a new variable inside the loop to ensure each iteration uses a unique memory address.
+      ```go
+      for _, n := range []someStruct{{1}, {2}, {3}, {4}} {
+        localVar := n
+        // use localVar instead of n
+      }
+      ```
+    - **Do** use indexed addressing to directly reference the elements in an array or slice, avoiding the shared address problem.
+      ```go
+      for i := range mySlice {
+        // use &mySlice[i] for a stable address
+      }
+      ```
+    - **Do not** store the address of the iteration variable. This practice leads to all references pointing to the same location in memory, causing errors.
+    - **Do not** use the iteration variable's address in goroutines. This can result in race conditions or logical errors if the variable's value changing before the goroutine accesses it.
+
+    ## References
+
+    - [Go For Statements](https://go.dev/ref/spec#For_statements)
+  cwe_id:
+    - 118
+  id: go_gosec_memory_memory_aliasing
+  documentation_url: https://docs.bearer.com/reference/rules/go_gosec_memory_memory_aliasing
+severity: low

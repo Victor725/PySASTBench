@@ -1,0 +1,35 @@
+imports:
+  - javascript_shared_common_datatype
+patterns:
+  - pattern: |
+      $<CLIENT>.index($<...>$<DATA_TYPE>$<...>)
+    filters:
+      - variable: CLIENT
+        values:
+          - client
+          - elasticsearch
+          - es
+      - variable: DATA_TYPE
+        detection: javascript_shared_common_datatype
+        scope: result
+languages:
+  - javascript
+metadata:
+  description: "Leakage of sensitive data to ElasticSearch"
+  remediation_message: |
+    ## Description
+
+    Leaking sensitive data to third-party data tools is a common cause of data leaks and can lead to data breaches.
+
+    ## Remediations
+
+    - **Do** ensure all sensitive data is removed when sending data to third-party services like ElasticSearch
+
+    ## References
+    - [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/client/javascript-api/current/index.html)
+  cwe_id:
+    - 201
+  id: javascript_third_parties_elasticsearch
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_third_parties_elasticsearch
+  cloud_code_suggestions: true
+severity: medium

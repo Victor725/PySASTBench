@@ -1,0 +1,62 @@
+imports:
+  - ruby_shared_common_user_input
+patterns:
+  - pattern: |
+      redirect_to($<USER_INPUT>$<...>)
+    filters:
+      - variable: USER_INPUT
+        detection: ruby_rails_open_redirect_user_input
+        scope: result
+languages:
+  - ruby
+auxiliary:
+  - id: ruby_rails_open_redirect_sanitized
+    patterns:
+      - $<_>.to_i
+      - $<_>.to_f
+      - pattern: $<...>$<METHOD>($<...>$<!>$<_>$<...>)
+        filters:
+          - variable: METHOD
+            regex: _(path|url)\z
+  - id: ruby_rails_open_redirect_user_input
+    sanitizer: ruby_rails_open_redirect_sanitized
+    patterns:
+      - pattern: $<REDIRECT_USER_INPUT>
+        filters:
+          - variable: REDIRECT_USER_INPUT
+            detection: ruby_shared_common_user_input
+            scope: cursor
+severity: medium
+metadata:
+  description: "Unsanitized user input in redirect"
+  remediation_message: |-
+    ## Description
+
+    Using unsanitized user input to perform redirects can make your application vulnerable to phishing attacks. This occurs when user input is directly used to determine the destination of a redirect without proper validation or sanitization, allowing attackers to redirect users to malicious sites, potentially compromising their security.
+
+    ## Remediations
+
+    - **Do not** use unsanitized user input when constructing URLs for redirects. Directly incorporating user input without validation can lead to phishing attacks and malicious site redirection.
+    - **Do** validate user input by employing a safe list or a mapping strategy for constructing URLs. This ensures that the redirection is to a known, safe location.
+      ```ruby
+      transport_path = case params[:transport_type]
+        when "planes"
+          planes_path
+        when "trains"
+          trains_path
+        when "automobiles"
+          automobiles_path
+        else
+          root_path
+        end
+
+      redirect_to transport_path
+      ```
+
+    ## References
+
+    - [OWASP Unvalidated Redirects and Forwards Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.html)
+  cwe_id:
+    - 601
+  id: ruby_rails_open_redirect
+  documentation_url: https://docs.bearer.com/reference/rules/ruby_rails_open_redirect

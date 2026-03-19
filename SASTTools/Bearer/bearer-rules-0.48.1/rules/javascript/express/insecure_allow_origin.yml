@@ -1,0 +1,57 @@
+imports:
+  - javascript_shared_common_user_input
+patterns:
+  - pattern: |
+      res.$<METHOD>($<ORIGIN>, $<USER_INPUT>)
+    filters:
+      - variable: METHOD
+        values:
+          - set
+          - header
+          - setHeader
+      - variable: ORIGIN
+        regex: (?i)['"]access-control-allow-origin["']
+      - variable: USER_INPUT
+        detection: javascript_shared_common_user_input
+        scope: result
+  - pattern: |
+      res.writeHead($<_>, $<INSECURE_CORS_HASH>)
+    filters:
+      - variable: INSECURE_CORS_HASH
+        detection: javascript_express_insecure_allow_origin_insecure_cors_hash
+        scope: cursor
+languages:
+  - javascript
+auxiliary:
+  - id: javascript_express_insecure_allow_origin_insecure_cors_hash
+    patterns:
+      - pattern: |
+          { $<ORIGIN>: $<USER_INPUT> }
+        filters:
+          - variable: ORIGIN
+            regex: (?i)['"]access-control-allow-origin["']
+          - variable: USER_INPUT
+            detection: javascript_shared_common_user_input
+            scope: result
+metadata:
+  description: "Unsanitized user input in Access-Control-Allow-Origin"
+  remediation_message: |-
+    ## Description
+
+    Using unverified user-defined input to set the Access-Control-Allow-Origin header can result in unauthorized access to sensitive data. This vulnerability exposes your application to potential security risks by allowing attackers to specify origins that can access resources.
+
+    ## Remediations
+
+    - **Do not** define the Access-Control-Allow-Origin header with user input. This practice can compromise the security of your application by allowing data access to unintended users.
+    - **Do** verify user input if it is absolutely necessary to use it for defining origins. Ensure that the verification process is robust to prevent security breaches.
+    - **Do** use a safelist approach when specifying origins. This uses a predefined list of trusted origins and only allows requests from those origins.
+
+    ## References
+
+    - [OWASP Origin & Access-Control-Allow-Origin](https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/11-Client-side_Testing/07-Testing_Cross_Origin_Resource_Sharing)
+  cwe_id:
+    - 346
+  id: javascript_express_insecure_allow_origin
+  documentation_url: https://docs.bearer.com/reference/rules/javascript_express_insecure_allow_origin
+  cloud_code_suggestions: true
+severity: medium

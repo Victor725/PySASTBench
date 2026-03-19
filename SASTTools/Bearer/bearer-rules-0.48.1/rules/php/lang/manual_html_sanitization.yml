@@ -1,0 +1,38 @@
+patterns:
+  - pattern: |
+      $<FUNCTION>($<_>, $<UNSAFE>$<...>)
+    filters:
+      - variable: FUNCTION
+        values:
+          - str_replace
+          - preg_replace
+      - variable: UNSAFE
+        string_regex: "&(lt|gt|apos|quot|amp);"
+languages:
+  - php
+severity: high
+metadata:
+  description: "Usage of manual HTML sanitization (XSS)"
+  remediation_message: |-
+    ## Description
+
+    Manual HTML sanitization can introduce Cross-Site Scripting (XSS) vulnerabilities. This security risk arises when developers attempt to manually escape HTML entities, which is a process prone to errors and oversights, potentially leaving the application vulnerable to XSS attacks.
+
+    ## Remediations
+
+    - **Do not** manually escape HTML entities in an attempt to sanitize input or output. This method is unreliable and increases the risk of XSS vulnerabilities.
+      ```php
+      $html = str_replace("&", "&amp;", $text); // unsafe
+      ```
+    - **Do** use built-in HTML sanitizers to handle escaping of HTML content securely. These tools are designed to mitigate the risk of XSS by properly encoding user input or any data displayed in an HTML context.
+      ```php
+      $html = htmlspecialchars($text);
+      ```
+
+    ## References
+
+    - [OWASP XSS explained](https://owasp.org/www-community/attacks/xss/)
+  cwe_id:
+    - 79
+  id: php_lang_manual_html_sanitization
+  documentation_url: https://docs.bearer.com/reference/rules/php_lang_manual_html_sanitization
